@@ -1,5 +1,6 @@
 package com.freelancecommandcenter.identity.application;
 
+import com.freelancecommandcenter.identity.application.port.out.AttemptCounter;
 import com.freelancecommandcenter.identity.application.port.out.IdentityMailer;
 import com.freelancecommandcenter.identity.application.port.out.OneTimeTokenRepository;
 import com.freelancecommandcenter.identity.application.port.out.PasswordHasher;
@@ -15,7 +16,9 @@ import com.freelancecommandcenter.identity.domain.User;
 import com.freelancecommandcenter.shared.error.DomainException;
 import com.freelancecommandcenter.shared.id.UserId;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Locale;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +30,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PasswordResetUseCase {
 
+    private static final int MAX_REQUESTS = 3;
+    private static final Duration REQUEST_WINDOW = Duration.ofHours(1);
+
     private final UserRepository users;
     private final OneTimeTokenRepository tokens;
     private final RefreshTokenRepository refreshTokens;
     private final PasswordHasher passwordHasher;
     private final IdentityMailer mailer;
+    private final AttemptCounter attempts;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
@@ -41,6 +48,7 @@ public class PasswordResetUseCase {
             RefreshTokenRepository refreshTokens,
             PasswordHasher passwordHasher,
             IdentityMailer mailer,
+            AttemptCounter attempts,
             ApplicationEventPublisher events,
             Clock clock) {
         this.users = users;
@@ -48,12 +56,18 @@ public class PasswordResetUseCase {
         this.refreshTokens = refreshTokens;
         this.passwordHasher = passwordHasher;
         this.mailer = mailer;
+        this.attempts = attempts;
         this.events = events;
         this.clock = clock;
     }
 
     @Transactional
     public void request(String email) {
+        // Counted for unknown addresses too, so a refusal does not reveal whether an account exists.
+        if (attempts.increment("password-reset:" + email.strip().toLowerCase(Locale.ROOT), REQUEST_WINDOW)
+                > MAX_REQUESTS) {
+            throw new TooManyAttemptsException();
+        }
         Email address;
         try {
             address = new Email(email);

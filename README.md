@@ -9,6 +9,7 @@ draft proposals with AI and track every bid — from the web, your phone or your
 
 | Feature | Status |
 |---|---|
+| **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
 | **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session) | planned |
 | **AI fit score** for every job, based on your skills, experience and rates — with the reasons behind the score | planned |
 | **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |

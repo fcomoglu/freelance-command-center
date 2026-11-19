@@ -40,7 +40,7 @@ class MeController {
     @PostMapping("/api/v1/me/email-verification")
     @ResponseStatus(HttpStatus.ACCEPTED)
     void resendVerification(AuthenticatedUser caller) {
-        emailVerification.sendVerification(caller.userId());
+        emailVerification.resend(caller.userId());
     }
 
     @Schema(requiredProperties = {"userId", "workspaceId", "email", "emailVerified", "language"})
