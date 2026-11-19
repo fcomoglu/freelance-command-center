@@ -1,5 +1,7 @@
 # Architecture
 
+The system design as currently agreed. Implementation status is tracked in the [README](../README.md#features).
+
 ## Goals
 
 - One place to discover, evaluate and respond to freelance jobs across several platforms.
@@ -101,5 +103,6 @@ sequenceDiagram
 ## Quality gates
 
 - CI on every pull request: build, unit + integration tests, module boundary verification, lint, type-check.
-- Code coverage reported (JaCoCo / Vitest); no fixed vanity threshold, but new code is expected to be tested.
+- Code coverage reported (JaCoCo for the API; Vitest for clients, planned); no fixed vanity threshold, but new
+  code is expected to be tested.
 - Dependency updates through Dependabot.

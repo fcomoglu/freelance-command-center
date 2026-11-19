@@ -3,16 +3,17 @@
 AI-assisted workspace for freelancers: discover jobs across freelance platforms, score them against your profile,
 draft proposals with AI and track every bid — from the web, your phone or your browser.
 
-> Status: early development. See [docs/architecture.md](docs/architecture.md) for the design.
+> Status: early development — the project skeleton is in place; features are being built.
 
-## Features (planned)
+## Features
 
-- **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev
-  (browser extension, inside your own session).
-- **AI fit score** for every job, based on your skills, experience and rates — with the reasons behind the score.
-- **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent.
-- **Bid tracking** and notifications on web and mobile.
-- **Multi-language UI** (English, Turkish).
+| Feature | Status |
+|---|---|
+| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session) | planned |
+| **AI fit score** for every job, based on your skills, experience and rates — with the reasons behind the score | planned |
+| **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |
+| **Bid tracking** and notifications on web and mobile | planned |
+| **Multi-language UI** (English, Turkish) | in progress |
 
 ## Tech stack
 
@@ -24,20 +25,6 @@ draft proposals with AI and track every bid — from the web, your phone or your
 | Mobile | Expo (React Native), TypeScript, Expo Router |
 | Extension | Chrome Manifest V3, TypeScript |
 | Tooling | Gradle, npm workspaces, Docker Compose, GitHub Actions |
-
-## Repository structure
-
-```
-apps/        api (Spring Boot), web, mobile, extension
-packages/    shared TypeScript packages (api-client, i18n)
-docs/        architecture and decision records (ADRs)
-infra/       local and deployment infrastructure
-```
-
-## Architecture
-
-A modular monolith with hexagonal modules (`identity`, `profile`, `platform`, `job`, `proposal`, `ai`,
-`notification`). Key decisions are documented as ADRs in [docs/adr](docs/adr).
 
 ## Getting started
 
@@ -51,4 +38,8 @@ npm run web:dev                  # web app
 npm run mobile:start             # mobile app (Expo)
 ```
 
-The full command list is in [CLAUDE.md](CLAUDE.md#commands).
+## Documentation
+
+- [Architecture](docs/architecture.md) — system design, modules and data flow.
+- [Decision records](docs/adr) — why the key technical decisions were made.
+- [CLAUDE.md](CLAUDE.md) — repository layout, conventions and the full command list.

@@ -1,8 +1,7 @@
 # CLAUDE.md
 
-Guidance for Claude Code (and humans) working in this repository.
-**Keep this file up to date:** whenever you add a module, change a command, introduce a convention or make an
-architectural decision, update the relevant section here in the same change.
+Guidance for Claude Code (and humans) working in this repository. It describes how the repository works **now**;
+keep it current as described in [Documentation and comments](#documentation-and-comments).
 
 ## Project
 
@@ -22,18 +21,16 @@ apps/
   api/          Spring Boot backend (Java) — modular monolith, hexagonal architecture
   web/          React + TypeScript + Vite web client
   mobile/       Expo (React Native) + TypeScript mobile client
-  extension/    Chrome MV3 extension (TypeScript) for platforms without an API
+  extension/    Chrome MV3 extension (TypeScript) for platforms without an API (planned)
 packages/
-  api-client/   TypeScript API client generated from the backend OpenAPI spec
+  api-client/   TypeScript API client generated from the backend OpenAPI spec (planned)
   i18n/         Shared translation resources (en, tr) for web, mobile and extension
 docs/
   architecture.md   System overview, modules, data flow
   adr/              Architecture Decision Records (one file per decision)
-infra/              Docker Compose and deployment files
+infra/              Docker Compose files
+.github/            CI workflow and Dependabot configuration
 ```
-
-Status (scaffolded): `apps/api`, `apps/web`, `apps/mobile`, `packages/i18n`, `infra/compose.yaml`, CI.
-Not yet created: `apps/extension`, `packages/api-client`. Update this section when they land.
 
 Other notes:
 - `apps/mobile/AGENTS.md` contains Expo-specific rules (always add Expo/React Native packages with
@@ -88,7 +85,7 @@ Other notes:
 
 - npm workspaces (root `package.json`); shared packages are consumed as TypeScript source (no build step).
 - TypeScript `strict`, Prettier (root `.prettierrc.json`), oxlint (web), ESLint via `expo lint` (mobile).
-  Tests: Vitest (web/extension) and Jest (mobile, Expo default) — to be added with the first features.
+  Tests: Vitest (web, extension) and Jest (mobile, Expo default) (planned).
 - Server state with TanStack Query; API calls only through `packages/api-client` (generated, do not edit by hand).
 - i18n with i18next / react-i18next; resources from `packages/i18n`. Language detection: user setting → device/browser
   language → `en`.
@@ -101,6 +98,36 @@ Other notes:
 - Formatting is automated (Spotless for Java, Prettier for TS); do not hand-format against the tools.
 - Naming: Java classes in `PascalCase`, use cases named as actions (`ScoreJobUseCase`), ports as roles
   (`JobRepository`, `PlatformJobSource`), REST DTOs suffixed `Request` / `Response`.
+
+## Documentation and comments
+
+Documentation describes the **current state** of the project, written in the present tense ("The API issues JWT
+access tokens"), never as a history ("We changed X to Y", "previously", "now", "new"). History lives in git commits;
+the reasons behind decisions live in ADRs.
+
+Each fact has one home; other files link to it instead of repeating it:
+
+| File | Owns |
+|---|---|
+| `README.md` | What the product is, feature list with status, tech stack, quick start, links to the docs below. |
+| `CLAUDE.md` | Working rules: layout, golden rules, conventions, the full command list. |
+| `docs/architecture.md` | The system design: context, modules, flows, integration, AI cost, i18n. |
+| `docs/adr/` | Why a hard-to-reverse decision was made. The only history-style documents. |
+| `apps/<app>/AGENTS.md` | Rules specific to one app (only where needed). |
+
+Rules:
+- Update the affected docs **in the same commit** as the change. Rewrite the outdated text; do not append notes about
+  what changed.
+- Remove text that is no longer true. Mark not-yet-built parts with `(planned)` and drop the marker when they ship.
+- Keep it short: facts, rules and reasons a reader cannot get from the code. No restating of what the code shows.
+- Accepted ADRs are not edited; a new ADR supersedes an old one and the old one's status links to it.
+
+Code comments follow the same principle:
+- Explain **why** (intent, constraints, non-obvious trade-offs), not what the code does. Prefer a clearer name over a
+  comment.
+- One-line doc comments on public types and module entry points; longer only when the contract is not obvious.
+- No history in comments ("changed to", "old version", "fix for ..."), no commented-out code, no TODOs (track work
+  outside the code).
 
 ## Commands
 

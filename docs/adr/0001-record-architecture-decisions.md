@@ -11,7 +11,8 @@ They should be easy to find and understand later, by the author, contributors an
 ## Decision
 
 Use Architecture Decision Records in `docs/adr/`, numbered sequentially (`NNNN-kebab-case-title.md`), each with
-Status, Date, Context, Decision and Consequences. A superseded ADR is not deleted; its status points to the new one.
+Status, Date, Context, Decision and Consequences. An accepted ADR is not edited; a new ADR supersedes it, and the old
+one's status points to the new one.
 
 ## Consequences
 
