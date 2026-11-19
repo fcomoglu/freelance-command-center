@@ -32,6 +32,52 @@
         "tags" : [ "Authentication" ]
       }
     },
+    "/api/v1/auth/password-reset" : {
+      "post" : {
+        "description" : "Always answers 202 so the endpoint does not reveal registered addresses.",
+        "operationId" : "requestPasswordReset",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Accepted"
+          }
+        },
+        "summary" : "E-mail a password reset link",
+        "tags" : [ "Authentication" ]
+      }
+    },
+    "/api/v1/auth/password-reset/confirmation" : {
+      "post" : {
+        "description" : "Signs the user out on every device.",
+        "operationId" : "confirmPasswordReset",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordResetConfirmation"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Set a new password with the token from the reset e-mail",
+        "tags" : [ "Authentication" ]
+      }
+    },
     "/api/v1/auth/refresh" : {
       "post" : {
         "description" : "Each refresh token works once. Reusing one signs out every device of that session.",
@@ -193,6 +239,22 @@
         "summary" : "The signed-in user",
         "tags" : [ "Account" ]
       }
+    },
+    "/api/v1/me/email-verification" : {
+      "post" : {
+        "description" : "Earlier links stop working. Does nothing when the address is already verified.",
+        "operationId" : "resendVerification",
+        "responses" : {
+          "202" : {
+            "description" : "Accepted"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Send a new verification e-mail",
+        "tags" : [ "Account" ]
+      }
     }
   },
   "components" : {
@@ -217,6 +279,33 @@
           }
         },
         "required" : [ "email", "emailVerified", "language", "userId", "workspaceId" ]
+      },
+      "PasswordResetConfirmation" : {
+        "type" : "object",
+        "properties" : {
+          "newPassword" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "token" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "newPassword", "token" ]
+      },
+      "PasswordResetRequest" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "maxLength" : 254,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "email" ]
       },
       "RefreshRequest" : {
         "type" : "object",

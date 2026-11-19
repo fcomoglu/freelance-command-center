@@ -1,6 +1,7 @@
 package com.freelancecommandcenter.identity.adapter.in.web;
 
 import com.freelancecommandcenter.identity.application.EmailVerificationUseCase;
+import com.freelancecommandcenter.identity.application.PasswordResetUseCase;
 import com.freelancecommandcenter.identity.application.SignUpUseCase;
 import com.freelancecommandcenter.identity.application.SignUpUseCase.SignUpCommand;
 import com.freelancecommandcenter.shared.i18n.Language;
@@ -25,10 +26,13 @@ class AuthController {
 
     private final SignUpUseCase signUp;
     private final EmailVerificationUseCase emailVerification;
+    private final PasswordResetUseCase passwordReset;
 
-    AuthController(SignUpUseCase signUp, EmailVerificationUseCase emailVerification) {
+    AuthController(
+            SignUpUseCase signUp, EmailVerificationUseCase emailVerification, PasswordResetUseCase passwordReset) {
         this.signUp = signUp;
         this.emailVerification = emailVerification;
+        this.passwordReset = passwordReset;
     }
 
     @Operation(
@@ -49,6 +53,24 @@ class AuthController {
         emailVerification.verify(request.token());
     }
 
+    @Operation(
+            summary = "E-mail a password reset link",
+            description = "Always answers 202 so the endpoint does not reveal registered addresses.")
+    @PostMapping("/password-reset")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        passwordReset.request(request.email());
+    }
+
+    @Operation(
+            summary = "Set a new password with the token from the reset e-mail",
+            description = "Signs the user out on every device.")
+    @PostMapping("/password-reset/confirmation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmation request) {
+        passwordReset.confirm(request.token(), request.newPassword());
+    }
+
     record SignUpRequest(
             @NotBlank @Size(max = 254) String email,
             @NotBlank @Size(max = 128) String password,
@@ -60,4 +82,10 @@ class AuthController {
             String language) {}
 
     record VerifyEmailRequest(@NotBlank @Size(max = 128) String token) {}
+
+    record PasswordResetRequest(@NotBlank @Size(max = 254) String email) {}
+
+    record PasswordResetConfirmation(
+            @NotBlank @Size(max = 128) String token,
+            @NotBlank @Size(max = 128) String newPassword) {}
 }

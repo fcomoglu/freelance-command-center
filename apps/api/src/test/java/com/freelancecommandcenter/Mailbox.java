@@ -5,7 +5,6 @@ import static org.awaitility.Awaitility.await;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,31 +25,35 @@ public class Mailbox {
 
     /** Waits for an e-mail to the address whose subject contains {@code subjectPart}. */
     public Mail awaitMail(String to, String subjectPart) {
-        return await().atMost(Duration.ofSeconds(15))
+        return awaitMails(to, subjectPart, 1).getFirst();
+    }
+
+    /** Waits until at least {@code count} matching e-mails arrived; newest first. */
+    public List<Mail> awaitMails(String to, String subjectPart, int count) {
+        List<Map<String, Object>> found = await().atMost(Duration.ofSeconds(15))
                 .pollInterval(Duration.ofMillis(200))
-                .until(() -> find(to, subjectPart), Optional::isPresent)
-                .orElseThrow();
+                .until(() -> search(to, subjectPart), messages -> messages.size() >= count);
+        return found.stream().map(this::read).toList();
     }
 
     @SuppressWarnings("unchecked")
-    private Optional<Mail> find(String to, String subjectPart) {
+    private List<Map<String, Object>> search(String to, String subjectPart) {
         Map<String, Object> result = client.get()
                 .uri(uri -> uri.path("/search")
                         .queryParam("query", "to:\"" + to + "\"")
                         .build())
                 .retrieve()
                 .body(JSON_OBJECT);
-        List<Map<String, Object>> messages = (List<Map<String, Object>>) result.get("messages");
-        return messages.stream()
-                .filter(message -> ((String) message.get("Subject")).contains(subjectPart))
-                .findFirst()
-                .map(message -> {
-                    Map<String, Object> full = client.get()
-                            .uri("/message/{id}", message.get("ID"))
-                            .retrieve()
-                            .body(JSON_OBJECT);
-                    return new Mail((String) full.get("Subject"), (String) full.get("Text"));
-                });
+        return ((List<Map<String, Object>>) result.get("messages"))
+                .stream()
+                        .filter(message -> ((String) message.get("Subject")).contains(subjectPart))
+                        .toList();
+    }
+
+    private Mail read(Map<String, Object> summary) {
+        Map<String, Object> full =
+                client.get().uri("/message/{id}", summary.get("ID")).retrieve().body(JSON_OBJECT);
+        return new Mail((String) full.get("Subject"), (String) full.get("Text"));
     }
 
     public record Mail(String subject, String text) {

@@ -14,13 +14,24 @@ import org.springframework.stereotype.Component;
 class IdentityMailListener {
 
     private final EmailVerificationUseCase emailVerification;
+    private final PasswordResetUseCase passwordReset;
     private final UserRepository users;
     private final IdentityMailer mailer;
 
-    IdentityMailListener(EmailVerificationUseCase emailVerification, UserRepository users, IdentityMailer mailer) {
+    IdentityMailListener(
+            EmailVerificationUseCase emailVerification,
+            PasswordResetUseCase passwordReset,
+            UserRepository users,
+            IdentityMailer mailer) {
         this.emailVerification = emailVerification;
+        this.passwordReset = passwordReset;
         this.users = users;
         this.mailer = mailer;
+    }
+
+    @ApplicationModuleListener
+    void on(PasswordResetRequested event) {
+        passwordReset.sendResetLink(event.userId());
     }
 
     @ApplicationModuleListener

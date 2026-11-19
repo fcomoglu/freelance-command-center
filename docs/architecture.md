@@ -104,8 +104,8 @@ Owned by the `identity` module; details and reasons in [ADR 0008](adr/0008-authe
   in memory only. Other browser origins are rejected by CORS. **Mobile and extension:** requests without an `Origin`
   get the refresh token in the response body and send it back in the body; mobile stores both tokens with
   `expo-secure-store`.
-- E-mail verification and password reset (planned) use single-use, hashed, expiring tokens. A password reset revokes
-  every refresh token of the user.
+- E-mail verification and password reset use single-use, hashed, expiring tokens; requesting a new link invalidates
+  the earlier one. A password reset revokes every refresh token of the user.
 - Sign-in and token endpoints are rate-limited per IP address and e-mail address (Redis, planned).
 - Outgoing e-mail goes through the `IdentityMailer` port; locally it is caught by Mailpit. Sign-in with Google (planned)
   attaches to the same user via the e-mail address.

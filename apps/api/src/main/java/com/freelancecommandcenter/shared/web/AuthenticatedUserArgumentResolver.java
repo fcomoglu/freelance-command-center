@@ -1,12 +1,13 @@
 package com.freelancecommandcenter.shared.web;
 
+import com.freelancecommandcenter.shared.error.DomainException;
+import com.freelancecommandcenter.shared.error.ErrorKind;
 import com.freelancecommandcenter.shared.id.UserId;
 import com.freelancecommandcenter.shared.id.WorkspaceId;
 import com.freelancecommandcenter.shared.security.AuthenticatedUser;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -37,7 +38,9 @@ class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentResolver
             WebDataBinderFactory binderFactory) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
-            throw new AuthenticationCredentialsNotFoundException("No access token");
+            // Public endpoints have no token; same answer as the security entry point.
+            throw new DomainException(
+                    ErrorKind.UNAUTHORIZED, "identity.unauthenticated", "A valid access token is required");
         }
         return new AuthenticatedUser(
                 UserId.of(jwt.getSubject()), WorkspaceId.of(jwt.getClaimAsString(AuthenticatedUser.WORKSPACE_CLAIM)));
