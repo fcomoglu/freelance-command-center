@@ -35,6 +35,7 @@ class OpenApiSpecIT {
         String spec = mvc.perform(get("/api/openapi")).andReturn().getResponse().getContentAsString();
 
         assertThat(spec).contains("\"openapi\"");
-        Files.writeString(SPEC, spec.endsWith("\n") ? spec : spec + "\n");
+        // The pretty printer uses the platform line separator; the committed file uses LF.
+        Files.writeString(SPEC, spec.replace("\r\n", "\n").stripTrailing() + "\n");
     }
 }
