@@ -1,0 +1,28 @@
+{
+  "name": "freelance-command-center",
+  "private": true,
+  "description": "AI-assisted workspace for freelancers across multiple platforms.",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "apps/web",
+    "apps/mobile",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "web:dev": "npm run dev --workspace apps/web",
+    "web:build": "npm run build --workspace apps/web",
+    "mobile:start": "npm run start --workspace apps/mobile",
+    "i18n:check": "npm run check --workspace packages/i18n",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.10.1"
+  }
+}
