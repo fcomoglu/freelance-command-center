@@ -3,11 +3,12 @@ package com.freelancecommandcenter;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.DynamicPropertyRegistrar;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/** PostgreSQL and Redis containers for integration tests; image versions match infra/compose.yaml. */
+/** Containers for integration tests; image versions match infra/compose.yaml. */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
@@ -21,5 +22,18 @@ public class TestcontainersConfiguration {
     @ServiceConnection(name = "redis")
     GenericContainer<?> redisContainer() {
         return new GenericContainer<>(DockerImageName.parse("redis:8-alpine")).withExposedPorts(6379);
+    }
+
+    @Bean
+    MailpitContainer mailpitContainer() {
+        return new MailpitContainer();
+    }
+
+    @Bean
+    DynamicPropertyRegistrar mailProperties(MailpitContainer mailpit) {
+        return registry -> {
+            registry.add("spring.mail.host", mailpit::getHost);
+            registry.add("spring.mail.port", mailpit::smtpPort);
+        };
     }
 }

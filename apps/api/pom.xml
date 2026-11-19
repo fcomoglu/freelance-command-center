@@ -28,6 +28,7 @@
         <jacoco.version>0.8.16</jacoco.version>
         <spotless.version>3.11.0</spotless.version>
         <palantir-java-format.version>2.103.0</palantir-java-format.version>
+        <bouncycastle.version>1.87</bouncycastle.version>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +71,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <!-- Argon2 password hashing -->
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
         </dependency>
 
         <!-- Persistence -->
@@ -122,6 +130,12 @@
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-runtime</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- E-mail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
         <!-- Operations -->

@@ -12,6 +12,16 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+  web:
+    # Fallback when a request has no Accept-Language header; never the server's own locale.
+    locale: en
+  messages:
+    basename: messages
+    fallback-to-system-locale: false
+  mail:
+    # Mailpit from infra/compose.yaml locally; set SPRING_MAIL_* in other environments.
+    host: localhost
+    port: 1025
   threads:
     virtual:
       enabled: true
@@ -41,3 +51,10 @@ springdoc:
     path: /api/openapi
   swagger-ui:
     path: /api/docs
+
+fcc:
+  identity:
+    web-base-url: http://localhost:5173
+    web-origins:
+      - http://localhost:5173
+    mail-from: no-reply@freelancecommandcenter.com
