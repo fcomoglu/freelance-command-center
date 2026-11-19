@@ -1,0 +1,20 @@
+{
+  "app": {
+    "name": "Freelance Command Center",
+    "tagline": "Find, score and win freelance jobs across platforms."
+  },
+  "nav": {
+    "jobs": "Jobs",
+    "proposals": "Proposals",
+    "platforms": "Platforms",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "settings": {
+    "language": "Language"
+  },
+  "language": {
+    "en": "English",
+    "tr": "Turkish"
+  }
+}

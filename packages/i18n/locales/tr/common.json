@@ -1,0 +1,20 @@
+{
+  "app": {
+    "name": "Freelance Command Center",
+    "tagline": "Platformlardaki freelance işleri bul, puanla ve kazan."
+  },
+  "nav": {
+    "jobs": "İlanlar",
+    "proposals": "Teklifler",
+    "platforms": "Platformlar",
+    "profile": "Profil",
+    "settings": "Ayarlar"
+  },
+  "settings": {
+    "language": "Dil"
+  },
+  "language": {
+    "en": "İngilizce",
+    "tr": "Türkçe"
+  }
+}
