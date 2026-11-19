@@ -81,6 +81,8 @@ Other notes:
 - Cross-module side effects use events persisted by the Spring Modulith event publication registry (transactional
   outbox). Event handlers must be **idempotent**. There is no external message broker; events that must leave the
   process are externalized through Spring Modulith when needed.
+- Authenticated endpoints take the caller as an `AuthenticatedUser` parameter (`shared.security`); every read and
+  write of user data is scoped to its `workspaceId`.
 - REST: follow the [API conventions](docs/architecture.md#api-conventions) (paths, errors, IDs, pagination,
   JSON formats). The contract is code-first: changing a controller or DTO changes `packages/api-client/openapi.json`
   on the next `verify`; commit it together with the regenerated `schema.d.ts`.

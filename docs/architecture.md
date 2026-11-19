@@ -94,17 +94,20 @@ Owned by the `identity` module; details and reasons in [ADR 0008](adr/0008-authe
   e-mail address is registered.
 - Sign-up creates the user and their workspace. Unverified users can sign in; connecting platforms requires a
   verified e-mail address.
-- **Access token:** RS256-signed JWT, valid for 15 minutes, carrying the user id and workspace id. Every module
-  reads it through Spring Security's resource-server support.
+- **Access token:** RS256-signed JWT, valid for 15 minutes, carrying the user id (`sub`) and workspace id (`wid`).
+  Every module reads it through Spring Security's resource-server support; controllers receive the caller as an
+  `AuthenticatedUser`.
 - **Refresh token:** opaque random value, stored only as a SHA-256 hash, valid for 30 days, rotated on every use.
   Reusing an already rotated token revokes its whole token family (one family per signed-in device).
-- **Web:** the refresh token lives in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie limited to
-  `/api/v1/auth`; the access token is kept in memory only. **Mobile:** both tokens are stored with
+- **Web:** requests from an allowed origin (`fcc.identity.web-origins`) get the refresh token as the `fcc_refresh`
+  cookie (`HttpOnly`, `Secure`, `SameSite=Strict`, path `/api/v1/auth`), never in the body; the access token is kept
+  in memory only. Other browser origins are rejected by CORS. **Mobile and extension:** requests without an `Origin`
+  get the refresh token in the response body and send it back in the body; mobile stores both tokens with
   `expo-secure-store`.
-- E-mail verification and password reset use single-use, hashed, expiring tokens. A password reset revokes every
-  refresh token of the user.
-- Sign-in and token endpoints are rate-limited per IP address and e-mail address (Redis).
-- Outgoing e-mail goes through a `MailSender` port; locally it is caught by Mailpit. Sign-in with Google (planned)
+- E-mail verification and password reset (planned) use single-use, hashed, expiring tokens. A password reset revokes
+  every refresh token of the user.
+- Sign-in and token endpoints are rate-limited per IP address and e-mail address (Redis, planned).
+- Outgoing e-mail goes through the `IdentityMailer` port; locally it is caught by Mailpit. Sign-in with Google (planned)
   attaches to the same user via the e-mail address.
 
 ## API conventions

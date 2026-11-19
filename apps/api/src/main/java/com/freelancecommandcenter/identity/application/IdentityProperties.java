@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 @ConfigurationProperties("fcc.identity")
 public record IdentityProperties(
         String webBaseUrl,
-        List<String> webOrigins,
+        @DefaultValue List<String> webOrigins,
         String mailFrom,
         @DefaultValue("15m") Duration accessTokenLifetime,
         @DefaultValue("30d") Duration refreshTokenLifetime,
