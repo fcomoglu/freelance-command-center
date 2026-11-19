@@ -70,10 +70,15 @@ Other notes:
   - `application` — use cases (one class per use case), ports (`port.in` / `port.out` interfaces), transactions.
   - `adapter.in.web` — REST controllers + request/response DTOs.
   - `adapter.out.*` — persistence (JPA), platform API clients, Claude client, etc.
+- **Pragmatic DDD:** modules are bounded contexts with their own language. Modules with real business rules
+  (`identity`, `job`, `matching`, `proposal`) use aggregates (invariants enforced inside, changed only through
+  their methods), value objects (immutable records), typed IDs (`JobId`) and domain events. Thin modules
+  (`notification`) may stay simpler. One aggregate per transaction; other aggregates react to its events.
 - Modules talk to each other through their **published API** (`<module>/api` package) or **domain events**, never by
   reaching into another module's internals.
 - Cross-module side effects use events persisted by the Spring Modulith event publication registry (transactional
-  outbox). Event handlers must be **idempotent**.
+  outbox). Event handlers must be **idempotent**. There is no external message broker; events that must leave the
+  process are externalized through Spring Modulith when needed.
 - REST: follow the [API conventions](docs/architecture.md#api-conventions) (paths, errors, IDs, pagination,
   JSON formats). The contract is code-first: changing a controller or DTO changes `packages/api-client/openapi.json`
   on the next `verify`; commit it together with the regenerated `schema.d.ts`.
@@ -102,7 +107,7 @@ Other notes:
 - Branches: `main` is always releasable; work on `feat/...`, `fix/...` branches, merge via pull request.
 - Formatting is automated (Spotless for Java, Prettier for TS); do not hand-format against the tools.
 - Naming: Java classes in `PascalCase`, use cases named as actions (`ScoreJobUseCase`), ports as roles
-  (`JobRepository`, `PlatformJobSource`), REST DTOs suffixed `Request` / `Response`.
+  (`JobRepository`, `JobSource`), REST DTOs suffixed `Request` / `Response`.
 
 ## Documentation and comments
 

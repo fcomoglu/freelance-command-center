@@ -41,8 +41,19 @@ flowchart LR
 | Upwork | Official GraphQL API (OAuth 2) | Requires an approved API key. |
 | Fiverr, Bionluk, Arc.dev | Browser extension | Reads pages the user opens/allows inside their own session and sends structured data to the API. Never submits on its own: it pre-fills forms and the user clicks submit. |
 
-All sources are adapters behind the same `PlatformJobSource` / `ProposalChannel` ports, so the rest of the system
-does not know whether a job came from an API or from the extension.
+Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-style-and-platform-patterns.md)):
+
+- **Capability ports (interface segregation):** `JobSource`, `ProposalSubmitter`, `ProposalStatusTracker`,
+  `AccountConnector`. Each platform adapter implements only the capabilities the platform supports.
+- **Strategy + registry:** every adapter is a strategy for its ports; `PlatformRegistry` selects it by
+  `PlatformCode` and answers which capabilities a platform has. Adding a platform means adding an adapter.
+- **Anti-corruption layer:** a translator per platform maps platform data to the canonical `JobListing` model. The raw
+  payload is kept (JSONB) so mappings can be fixed and re-applied.
+- **Decorators** around adapters for rate limiting (Redis token bucket), retries, circuit breaking and OAuth token
+  refresh, so adapters contain only platform logic.
+- **Factory** for API clients configured with one connection's credentials.
+- **Inbound port** `IngestCapturedJobs` for data pushed by the browser extension; it enters the same canonical model,
+  so the rest of the system does not know whether a job came from an API or from the extension.
 
 ## Backend modules
 
