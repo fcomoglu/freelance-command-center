@@ -16,5 +16,73 @@
   "language": {
     "en": "English",
     "tr": "Turkish"
+  },
+  "auth": {
+    "fields": {
+      "email": "E-mail",
+      "password": "Password",
+      "newPassword": "New password",
+      "passwordHint": "At least 10 characters."
+    },
+    "signIn": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "noAccount": "No account yet?",
+      "createAccount": "Create one",
+      "forgotPassword": "Forgot your password?"
+    },
+    "signUp": {
+      "title": "Create your account",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "checkEmailTitle": "Check your inbox",
+      "checkEmail": "We sent a confirmation link to {{email}}. Open it to confirm your address, then sign in."
+    },
+    "verifyEmail": {
+      "title": "Confirm e-mail address",
+      "verifying": "Confirming your e-mail address…",
+      "success": "Your e-mail address is confirmed.",
+      "continue": "Continue"
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "intro": "Enter your e-mail address and we will send you a link to choose a new password.",
+      "submit": "Send link",
+      "sent": "If an account exists for {{email}}, a reset link is on its way. The link is valid for 1 hour."
+    },
+    "resetPassword": {
+      "title": "Choose a new password",
+      "submit": "Save password",
+      "success": "Your password has been changed and you have been signed out on all devices.",
+      "missingToken": "This link is incomplete. Request a new one."
+    },
+    "backToSignIn": "Back to sign in"
+  },
+  "account": {
+    "signedInAs": "Signed in as {{email}}",
+    "signOut": "Sign out",
+    "unverified": "Your e-mail address is not confirmed yet. Connecting platforms requires a confirmed address.",
+    "resend": "Send a new link",
+    "resent": "A new confirmation link has been sent."
+  },
+  "errors": {
+    "identity": {
+      "invalid_credentials": "E-mail or password is wrong.",
+      "invalid_token": "This link is invalid or has expired.",
+      "weak_password": "The password must be 10 to 128 characters long.",
+      "invalid_email": "Enter a valid e-mail address.",
+      "too_many_attempts": "Too many attempts. Please try again later.",
+      "unauthenticated": "Your session has ended. Please sign in again."
+    },
+    "validation": {
+      "failed": "Please check the highlighted fields.",
+      "not_blank": "This field is required.",
+      "size": "This value is too long."
+    },
+    "network": {
+      "unreachable": "The server cannot be reached. Check your connection and try again."
+    },
+    "unknown": "Something went wrong. Please try again."
   }
 }

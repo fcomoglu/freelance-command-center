@@ -19,3 +19,16 @@ export function resolveLanguage(tag: string | null | undefined): SupportedLangua
   const base = tag?.toLowerCase().split('-')[0];
   return supportedLanguages.find((language) => language === base) ?? defaultLanguage;
 }
+
+const hasKey = (object: unknown, path: string[]): boolean =>
+  path.length === 0
+    ? typeof object === 'string'
+    : object !== null &&
+      typeof object === 'object' &&
+      hasKey((object as Record<string, unknown>)[path[0]], path.slice(1));
+
+/** Translation key for an API error code such as `identity.invalid_token`; unknown codes get a generic message. */
+export function errorKey(code: string): string {
+  const key = `errors.${code}`;
+  return hasKey(resources[defaultLanguage][defaultNamespace], key.split('.')) ? key : 'errors.unknown';
+}

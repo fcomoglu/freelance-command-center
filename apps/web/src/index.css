@@ -1,58 +1,7 @@
-:root {
-  --color-bg: #ffffff;
-  --color-text: #111827;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-accent: #2563eb;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  color: var(--color-text);
-  background: var(--color-bg);
-}
+@import 'tailwindcss';
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0b1120;
-    --color-text: #e5e7eb;
-    --color-muted: #9ca3af;
-    --color-border: #1f2937;
-    --color-accent: #60a5fa;
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
   }
-}
-
-body {
-  margin: 0;
-}
-
-.app-header,
-.app-nav {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.app-header {
-  justify-content: space-between;
-}
-
-.language-select {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  color: var(--color-muted);
-}
-
-.app-nav a {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.app-main {
-  padding: 2rem 1rem;
 }
