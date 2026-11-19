@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supportedLanguages } from '@fcc/i18n';
 
+import { AccountSection } from '@/components/account-section';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -29,6 +30,7 @@ export default function SettingsScreen() {
             </Pressable>
           );
         })}
+        <AccountSection />
       </SafeAreaView>
     </ThemedView>
   );
