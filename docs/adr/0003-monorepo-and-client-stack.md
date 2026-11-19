@@ -1,6 +1,6 @@
 # 3. Monorepo with React web, Expo mobile and a Chrome extension
 
-- Status: accepted
+- Status: accepted; the backend build tool is superseded by [ADR 0006](0006-maven-for-the-backend-build.md)
 - Date: 2026-11-19
 
 ## Context

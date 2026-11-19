@@ -22,9 +22,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-      - uses: gradle/actions/setup-gradle@v4
+          cache: maven
       - name: Build, check formatting and run tests (Testcontainers uses the runner's Docker)
-        run: ./gradlew build
+        run: ./mvnw -B -ntp verify
 
   clients:
     name: Clients (TypeScript)

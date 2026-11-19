@@ -24,18 +24,18 @@ draft proposals with AI and track every bid — from the web, your phone or your
 | Web | React, TypeScript, Vite, TanStack Query, i18next |
 | Mobile | Expo (React Native), TypeScript, Expo Router |
 | Extension | Chrome Manifest V3, TypeScript |
-| Tooling | Gradle, npm workspaces, Docker Compose, GitHub Actions |
+| Tooling | Maven, npm workspaces, Docker Compose, GitHub Actions |
 
 ## Getting started
 
 Requirements: JDK 25, Node 22+, Docker.
 
 ```bash
-npm install                      # TypeScript workspaces (web, mobile, shared packages)
-cd apps/api && ./gradlew build   # backend build and tests
-cd apps/api && ./gradlew bootRun # API on http://localhost:8080 (starts PostgreSQL and Redis via Docker Compose)
-npm run web:dev                  # web app
-npm run mobile:start             # mobile app (Expo)
+npm install                           # TypeScript workspaces (web, mobile, shared packages)
+cd apps/api && ./mvnw verify          # backend build and tests
+cd apps/api && ./mvnw spring-boot:run # API on http://localhost:8080 (starts PostgreSQL and Redis via Docker Compose)
+npm run web:dev                       # web app
+npm run mobile:start                  # mobile app (Expo)
 ```
 
 ## Documentation

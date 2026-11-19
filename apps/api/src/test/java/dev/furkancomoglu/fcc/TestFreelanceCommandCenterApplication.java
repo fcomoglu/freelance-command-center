@@ -2,7 +2,7 @@ package dev.furkancomoglu.fcc;
 
 import org.springframework.boot.SpringApplication;
 
-/** Runs the API locally with Testcontainers instead of Docker Compose: ./gradlew bootTestRun */
+/** Runs the API locally with Testcontainers instead of Docker Compose: ./mvnw spring-boot:test-run */
 public class TestFreelanceCommandCenterApplication {
 
     public static void main(String[] args) {

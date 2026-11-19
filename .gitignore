@@ -11,8 +11,8 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Java / Gradle
-.gradle/
+# Java / Maven
+target/
 build/
 out/
 *.class
