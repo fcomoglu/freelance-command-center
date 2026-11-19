@@ -54,6 +54,8 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 - **Factory** for API clients configured with one connection's credentials.
 - **Inbound port** `IngestCapturedJobs` for data pushed by the browser extension; it enters the same canonical model,
   so the rest of the system does not know whether a job came from an API or from the extension.
+- **Extension extractors:** the extension parses pages in the browser with one extractor (strategy) per site and sends
+  a versioned JSON schema; page HTML never reaches the server. A site redesign is fixed by an extension release.
 
 ## Backend modules
 
