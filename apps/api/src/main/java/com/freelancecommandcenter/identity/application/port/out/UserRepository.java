@@ -1,0 +1,15 @@
+package com.freelancecommandcenter.identity.application.port.out;
+
+import com.freelancecommandcenter.identity.domain.Email;
+import com.freelancecommandcenter.identity.domain.User;
+import com.freelancecommandcenter.shared.id.UserId;
+import java.util.Optional;
+
+public interface UserRepository {
+
+    Optional<User> findById(UserId id);
+
+    Optional<User> findByEmail(Email email);
+
+    void save(User user);
+}
