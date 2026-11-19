@@ -123,7 +123,7 @@ Reasons in [ADR 0009](adr/0009-api-contract.md).
 - **Lists:** cursor pagination everywhere. Request `?limit=20&cursor=<opaque>` (default 20, maximum 100); response
   `{"items": [...], "nextCursor": "<opaque>" | null}`. Cursors are keyset positions, not offsets.
 - **Errors:** RFC 9457 `application/problem+json` with a stable `code` (`<module>.<reason>`, for example
-  `identity.email_already_registered`). Validation errors use `code: "validation.failed"` and an `errors` array
+  `identity.invalid_token`). Validation errors use `code: "validation.failed"` and an `errors` array
   of `{"field", "code"}` (`validation.not_blank`, ...). Clients translate `code`; `detail` is English text for
   developers and is never shown to users.
 - **Idempotency:** endpoints with external side effects (submitting a proposal) accept an `Idempotency-Key` header.

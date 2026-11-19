@@ -41,7 +41,8 @@ Other notes:
 
 1. **English only** in everything that lives in the repository: code, identifiers, comments, commit messages, docs,
    log messages, API error codes, test names. The only non-English text allowed is inside translation files
-   (`packages/i18n/locales/<lang>/*.json`).
+   (`packages/i18n/locales/<lang>/*.json` for clients, `apps/api/src/main/resources/messages_<lang>.properties` for
+   server-rendered texts such as e-mails; `messages.properties` is English).
 2. **No hard-coded user-facing strings** in web, mobile or extension. Every visible string goes through i18n
    (`t('key')`), and every new key is added to **all** supported locales (currently `en` and `tr`) in the same change.
    `en` is the source/fallback locale.
@@ -67,7 +68,8 @@ Other notes:
 - The compiler runs with `-Xlint:all` and `failOnWarning`: warnings fail the build.
 - Inside each module, **hexagonal layering**:
   - `domain` — entities, value objects, domain services, domain events. No Spring, no JPA annotations.
-  - `application` — use cases (one class per use case), ports (`port.in` / `port.out` interfaces), transactions.
+  - `application` — use case classes (one per use case, the module's inbound API for adapters), outbound ports
+    (`port.out` interfaces), transactions, event listeners.
   - `adapter.in.web` — REST controllers + request/response DTOs.
   - `adapter.out.*` — persistence (JPA), platform API clients, Claude client, etc.
 - **Pragmatic DDD:** modules are bounded contexts with their own language. Modules with real business rules
@@ -83,10 +85,14 @@ Other notes:
   JSON formats). The contract is code-first: changing a controller or DTO changes `packages/api-client/openapi.json`
   on the next `verify`; commit it together with the regenerated `schema.d.ts`.
 - Persistence: PostgreSQL, schema migrations with Flyway only (`V<n>__description.sql`), never `ddl-auto=update`.
+  Each module owns a Postgres schema named after it (`identity.users`); no module reads another module's tables.
+  JPA entities live in `adapter.out.persistence` and map to and from domain objects.
 - AI: official Anthropic Java SDK behind an `ai` module port, so prompts/models are swappable and testable.
   Prompts live in versioned resource files, not string literals in code.
-- Tests: JUnit 5, AssertJ, Testcontainers (PostgreSQL, Redis). Unit tests for domain/application, slice or
-  integration tests for adapters, Modulith `ApplicationModules.verify()` test.
+- Tests: JUnit 5, AssertJ, Testcontainers (PostgreSQL, Redis, Mailpit). Unit tests for domain and application,
+  end-to-end HTTP tests for adapters, Modulith `ApplicationModules.verify()` and ArchUnit layering tests. Integration
+  tests are annotated with `@IntegrationTest` (one shared context and set of containers) and use `ApiClient` for HTTP
+  calls and `Mailbox` to read delivered e-mails.
 - Test class names decide the phase: `*Test` / `*Tests` run in `test` (Surefire, no Docker needed), `*IT` run in
   `integration-test` (Failsafe, Testcontainers).
 
