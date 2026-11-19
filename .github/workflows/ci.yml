@@ -25,6 +25,9 @@ jobs:
           cache: maven
       - name: Build, check formatting and run tests (Testcontainers uses the runner's Docker)
         run: ./mvnw -B -ntp verify
+      - name: Committed OpenAPI spec matches the code
+        working-directory: .
+        run: git diff --exit-code -- packages/api-client/openapi.json
 
   clients:
     name: Clients (TypeScript)
@@ -36,6 +39,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Generated API types match the committed spec
+        run: npm run api:generate && git diff --exit-code -- packages/api-client/src/schema.d.ts
       - name: Translation keys are consistent
         run: npm run i18n:check
       - name: Format check

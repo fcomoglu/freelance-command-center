@@ -23,7 +23,7 @@ apps/
   mobile/       Expo (React Native) + TypeScript mobile client
   extension/    Chrome MV3 extension (TypeScript) for platforms without an API (planned)
 packages/
-  api-client/   TypeScript API client generated from the backend OpenAPI spec (planned)
+  api-client/   Typed API client; `openapi.json` is exported by the API, types are generated from it
   i18n/         Shared translation resources (en, tr) for web, mobile and extension
 docs/
   architecture.md   System overview, modules, data flow
@@ -74,8 +74,9 @@ Other notes:
   reaching into another module's internals.
 - Cross-module side effects use events persisted by the Spring Modulith event publication registry (transactional
   outbox). Event handlers must be **idempotent**.
-- REST: resource-oriented, `/api/v1/...`, OpenAPI via springdoc; errors as RFC 9457 Problem Details with a stable
-  `code` field that clients translate.
+- REST: follow the [API conventions](docs/architecture.md#api-conventions) (paths, errors, IDs, pagination,
+  JSON formats). The contract is code-first: changing a controller or DTO changes `packages/api-client/openapi.json`
+  on the next `verify`; commit it together with the regenerated `schema.d.ts`.
 - Persistence: PostgreSQL, schema migrations with Flyway only (`V<n>__description.sql`), never `ddl-auto=update`.
 - AI: official Anthropic Java SDK behind an `ai` module port, so prompts/models are swappable and testable.
   Prompts live in versioned resource files, not string literals in code.
@@ -89,7 +90,8 @@ Other notes:
 - npm workspaces (root `package.json`); shared packages are consumed as TypeScript source (no build step).
 - TypeScript `strict`, Prettier (root `.prettierrc.json`), oxlint (web), ESLint via `expo lint` (mobile).
   Tests: Vitest (web, extension) and Jest (mobile, Expo default) (planned).
-- Server state with TanStack Query; API calls only through `packages/api-client` (generated, do not edit by hand).
+- Server state with TanStack Query; API calls only through `packages/api-client` (`createApiClient`). Never edit
+  `openapi.json` or `src/schema.d.ts` by hand.
 - i18n with i18next / react-i18next; resources from `packages/i18n`. Language detection: user setting → device/browser
   language → `en`.
 - Mobile: Expo + Expo Router; secure token storage with `expo-secure-store`.
@@ -153,6 +155,8 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Mobile: start Expo | `npm run mobile:start` |
 | Mobile: add a package | `cd apps/mobile && npx expo install <package>` |
 | Translation key check | `npm run i18n:check` |
+| Regenerate API types from the committed spec | `npm run api:generate` |
+| Update the committed spec (`packages/api-client/openapi.json`) | `cd apps/api && ./mvnw verify` |
 | Lint / type-check / format all clients | `npm run lint` / `npm run typecheck` / `npm run format` |
 | Infrastructure only | `docker compose -f infra/compose.yaml up -d` |
 | Local e-mail inbox (Mailpit) | `http://localhost:8025` |

@@ -34,6 +34,9 @@ management:
         enabled: true
 
 springdoc:
+  # Stable output so the committed spec only changes when the contract does.
+  writer-with-order-by-keys: true
+  writer-with-default-pretty-printer: true
   api-docs:
     path: /api/openapi
   swagger-ui:
