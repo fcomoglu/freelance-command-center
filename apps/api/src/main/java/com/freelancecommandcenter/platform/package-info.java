@@ -3,4 +3,4 @@
  * adapters that fetch jobs and submit proposals.
  */
 @org.springframework.modulith.ApplicationModule(displayName = "Platform")
-package dev.furkancomoglu.fcc.platform;
+package com.freelancecommandcenter.platform;

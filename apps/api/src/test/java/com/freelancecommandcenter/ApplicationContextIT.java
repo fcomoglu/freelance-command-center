@@ -1,4 +1,4 @@
-package dev.furkancomoglu.fcc;
+package com.freelancecommandcenter;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

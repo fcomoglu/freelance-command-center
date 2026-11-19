@@ -3,4 +3,4 @@
  * prompt templates and usage/cost tracking.
  */
 @org.springframework.modulith.ApplicationModule(displayName = "AI")
-package dev.furkancomoglu.fcc.ai;
+package com.freelancecommandcenter.ai;

@@ -3,4 +3,4 @@
  * source of truth used for job matching and proposal drafting.
  */
 @org.springframework.modulith.ApplicationModule(displayName = "Profile")
-package dev.furkancomoglu.fcc.profile;
+package com.freelancecommandcenter.profile;

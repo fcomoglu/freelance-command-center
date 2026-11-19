@@ -1,4 +1,4 @@
-package dev.furkancomoglu.fcc;
+package com.freelancecommandcenter;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -8,7 +8,7 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
 /** Enforces the hexagonal layering used inside every module (see docs/adr/0002). */
-@AnalyzeClasses(packages = "dev.furkancomoglu.fcc", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = "com.freelancecommandcenter", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTests {
 
     @ArchTest

@@ -35,7 +35,7 @@ infra/              Docker Compose files
 Other notes:
 - `apps/mobile/AGENTS.md` contains Expo-specific rules (always add Expo/React Native packages with
   `npx expo install`, check the versioned Expo docs before using an API). Follow it when working in `apps/mobile`.
-- The Java base package is `dev.furkancomoglu.fcc`.
+- The Java base package is `com.freelancecommandcenter`.
 
 ## Golden rules
 
@@ -58,7 +58,7 @@ Other notes:
 
 - Java 25 (LTS), Spring Boot 4, Maven (wrapper `mvnw`). Versions not managed by the Spring Boot parent are
   properties at the top of `pom.xml`.
-- **Modular monolith** with Spring Modulith. Each top-level package under `dev.furkancomoglu.fcc` is a module,
+- **Modular monolith** with Spring Modulith. Each top-level package under `com.freelancecommandcenter` is a module,
   declared in its `package-info.java` with `@ApplicationModule`; `shared` is the open kernel. The module list and
   responsibilities are in [docs/architecture.md](docs/architecture.md#backend-modules).
 - Local infrastructure (PostgreSQL 18, Redis 8, Mailpit) is defined once in `infra/compose.yaml`; Spring Boot's

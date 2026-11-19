@@ -1,4 +1,4 @@
-package dev.furkancomoglu.fcc;
+package com.freelancecommandcenter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
