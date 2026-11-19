@@ -73,6 +73,27 @@ platform.
     user's session is never shown to another user.
 - Scores, filters, proposals and AI usage are always per workspace.
 
+## Authentication
+
+Owned by the `identity` module; details and reasons in [ADR 0008](adr/0008-authentication.md).
+
+- Sign-up and sign-in with e-mail and password. Passwords are hashed with Argon2id. Responses never reveal whether an
+  e-mail address is registered.
+- Sign-up creates the user and their workspace. Unverified users can sign in; connecting platforms requires a
+  verified e-mail address.
+- **Access token:** RS256-signed JWT, valid for 15 minutes, carrying the user id and workspace id. Every module
+  reads it through Spring Security's resource-server support.
+- **Refresh token:** opaque random value, stored only as a SHA-256 hash, valid for 30 days, rotated on every use.
+  Reusing an already rotated token revokes its whole token family (one family per signed-in device).
+- **Web:** the refresh token lives in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie limited to
+  `/api/v1/auth`; the access token is kept in memory only. **Mobile:** both tokens are stored with
+  `expo-secure-store`.
+- E-mail verification and password reset use single-use, hashed, expiring tokens. A password reset revokes every
+  refresh token of the user.
+- Sign-in and token endpoints are rate-limited per IP address and e-mail address (Redis).
+- Outgoing e-mail goes through a `MailSender` port; locally it is caught by Mailpit. Sign-in with Google (planned)
+  attaches to the same user via the e-mail address.
+
 ## Core flow: from new job to proposal
 
 ```mermaid

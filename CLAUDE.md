@@ -61,8 +61,8 @@ Other notes:
 - **Modular monolith** with Spring Modulith. Each top-level package under `dev.furkancomoglu.fcc` is a module,
   declared in its `package-info.java` with `@ApplicationModule`; `shared` is the open kernel. The module list and
   responsibilities are in [docs/architecture.md](docs/architecture.md#backend-modules).
-- Local infrastructure (PostgreSQL 18, Redis 8) is defined once in `infra/compose.yaml`; Spring Boot's Docker Compose
-  support starts it on `spring-boot:run`. Tests use Testcontainers with the same image versions.
+- Local infrastructure (PostgreSQL 18, Redis 8, Mailpit) is defined once in `infra/compose.yaml`; Spring Boot's
+  Docker Compose support starts it on `spring-boot:run`. Tests use Testcontainers with the same image versions.
 - The Modulith event publication table (outbox) is created by Flyway `V1__event_publication_registry.sql`.
 - The compiler runs with `-Xlint:all` and `failOnWarning`: warnings fail the build.
 - Inside each module, **hexagonal layering**:
@@ -155,6 +155,7 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Translation key check | `npm run i18n:check` |
 | Lint / type-check / format all clients | `npm run lint` / `npm run typecheck` / `npm run format` |
 | Infrastructure only | `docker compose -f infra/compose.yaml up -d` |
+| Local e-mail inbox (Mailpit) | `http://localhost:8025` |
 
 CI (`.github/workflows/ci.yml`) runs the API build and the client checks (i18n, format, lint, type-check, web build)
 on every push to `main` and every pull request.

@@ -23,5 +23,12 @@ services:
     ports:
       - '6379:6379'
 
+  # Catches all outgoing e-mail locally; web UI on http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.34
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
 volumes:
   postgres-data:
