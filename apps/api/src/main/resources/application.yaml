@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: fcc-api
+  docker:
+    compose:
+      # Shared local infrastructure; the API is started from apps/api.
+      file: ../../infra/compose.yaml
+      lifecycle-management: start-only
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  threads:
+    virtual:
+      enabled: true
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: true
+
+server:
+  error:
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,modulith
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api/openapi
+  swagger-ui:
+    path: /api/docs

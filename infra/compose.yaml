@@ -1,0 +1,27 @@
+# Local development infrastructure. Started automatically by Spring Boot's Docker Compose support
+# when running the API locally, or manually with: docker compose -f infra/compose.yaml up -d
+name: fcc
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: fcc
+      POSTGRES_USER: fcc
+      POSTGRES_PASSWORD: fcc
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fcc -d fcc']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '6379:6379'
+
+volumes:
+  postgres-data:
