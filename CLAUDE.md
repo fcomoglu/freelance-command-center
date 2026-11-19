@@ -58,9 +58,9 @@ Other notes:
 
 - Java 25 (LTS), Spring Boot 4, Maven (wrapper `mvnw`). Versions not managed by the Spring Boot parent are
   properties at the top of `pom.xml`.
-- **Modular monolith** with Spring Modulith. Top-level packages under `dev.furkancomoglu.fcc` are modules:
-  `identity`, `profile`, `platform`, `job`, `proposal`, `ai`, `notification`, and the open `shared` kernel. Each
-  module is declared in its `package-info.java` with `@ApplicationModule`.
+- **Modular monolith** with Spring Modulith. Each top-level package under `dev.furkancomoglu.fcc` is a module,
+  declared in its `package-info.java` with `@ApplicationModule`; `shared` is the open kernel. The module list and
+  responsibilities are in [docs/architecture.md](docs/architecture.md#backend-modules).
 - Local infrastructure (PostgreSQL 18, Redis 8) is defined once in `infra/compose.yaml`; Spring Boot's Docker Compose
   support starts it on `spring-boot:run`. Tests use Testcontainers with the same image versions.
 - The Modulith event publication table (outbox) is created by Flyway `V1__event_publication_registry.sql`.

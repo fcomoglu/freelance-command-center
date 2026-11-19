@@ -48,16 +48,30 @@ does not know whether a job came from an API or from the extension.
 
 | Module | Responsibility |
 |---|---|
-| `identity` | Accounts, authentication (JWT access + refresh tokens), devices. |
+| `identity` | Users, workspaces, authentication (JWT access + refresh tokens), devices. |
 | `profile` | The freelancer's professional profile: skills, experience, rates, languages — the single source of truth used for matching and proposals. |
-| `platform` | Platform connections (OAuth tokens, extension pairing), per-platform adapters, sync scheduling. |
-| `job` | Normalized job listings, de-duplication, rule-based pre-filtering, scoring results. |
-| `proposal` | Proposal drafts, approval workflow, submission tracking and outcomes. |
-| `ai` | Claude integration: scoring, drafting, pricing. Prompt templates, caching strategy, usage/cost tracking. |
+| `platform` | Platform connections (OAuth tokens, extension pairing), per-platform adapters, sync scheduling. The only module that knows platform specifics. |
+| `job` | The job catalog: normalized listings, de-duplication, visibility. Holds no per-user data. |
+| `matching` | Per-workspace job filters, rule-based pre-filtering and fit scores; re-scores when the profile or filters change. |
+| `proposal` | Proposal drafts, approval workflow, submission and outcome tracking (submitted → viewed → shortlisted → won / lost). |
+| `ai` | Claude integration: scoring, drafting, pricing. Prompt templates, caching strategy, usage/cost tracking per workspace. |
 | `notification` | Push (mobile), email and in-app notifications. |
-| `shared` | Cross-cutting kernel: IDs, money, time, error model. Kept deliberately small. |
+| `shared` | Cross-cutting kernel: IDs (including `WorkspaceId`), money, time, error model. Kept deliberately small. |
 
 Each module follows the hexagonal layout described in `CLAUDE.md` (`domain` / `application` / `adapter`).
+
+The product ends at the proposal outcome: work on won projects (milestones, delivery, earnings) stays on the
+platform.
+
+## Data ownership
+
+- Every user-owned record belongs to a **workspace** (`WorkspaceId`), not directly to a user. A user has exactly one
+  workspace; the indirection lets agencies and teams be added without a schema migration.
+- **Job visibility** depends on the source:
+  - Jobs from official APIs are **public**: fetched once into a shared catalog and visible to every workspace.
+  - Jobs captured by the browser extension are **private** to the workspace that captured them; data read in one
+    user's session is never shown to another user.
+- Scores, filters, proposals and AI usage are always per workspace.
 
 ## Core flow: from new job to proposal
 
@@ -66,20 +80,24 @@ sequenceDiagram
     participant S as Scheduler / Extension
     participant P as platform
     participant J as job
+    participant M as matching
     participant A as ai
     participant R as proposal
     participant N as notification
 
     S->>P: fetch or receive new listings
     P->>J: JobDiscovered (event)
-    J->>J: normalize, de-duplicate, rule-based pre-filter
-    J->>A: request score (only jobs that pass the filter)
-    A-->>J: JobScored (fit score + reasons)
-    J->>N: notify if score >= user threshold
+    J->>J: normalize, de-duplicate, set visibility
+    J->>M: JobPublished (event)
+    M->>M: rule-based pre-filter per workspace
+    M->>A: score (only jobs that pass the filter)
+    A-->>M: fit score + reasons
+    M->>N: JobMatched (event), notify if score >= workspace threshold
     Note over R: User opens the job and asks for a draft
     R->>A: draft proposal (profile + job)
     A-->>R: draft text + suggested price
     R->>P: user approves → submit via API, or hand off to the extension to pre-fill
+    P-->>R: ProposalStatusChanged (event) from platform sync
 ```
 
 ## AI cost strategy
