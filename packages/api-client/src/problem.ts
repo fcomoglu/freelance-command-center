@@ -7,12 +7,15 @@ export interface ApiProblem {
   errors?: { field: string; code: string }[];
 }
 
-/** Thrown by the session helpers; carries the API problem, or `network.unreachable` when no answer arrived. */
+/**
+ * Thrown by the session helpers; carries the API problem, or `network.unreachable` when no answer arrived (the
+ * underlying error is kept as `cause`).
+ */
 export class ApiError extends Error {
   readonly problem: ApiProblem;
 
-  constructor(problem: ApiProblem) {
-    super(problem.detail ?? problem.code);
+  constructor(problem: ApiProblem, options?: { cause?: unknown }) {
+    super(problem.detail ?? problem.code, options);
     this.name = 'ApiError';
     this.problem = problem;
   }
@@ -34,8 +37,8 @@ export async function unwrap<D>(
   let result: { data?: D; error?: unknown; response: Response };
   try {
     result = await request;
-  } catch {
-    throw new ApiError({ status: 0, code: 'network.unreachable' });
+  } catch (cause) {
+    throw new ApiError({ status: 0, code: 'network.unreachable' }, { cause });
   }
   if (!result.response.ok) throw new ApiError(toProblem(result.error, result.response));
   return result.data as D;
