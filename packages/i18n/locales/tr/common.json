@@ -147,7 +147,7 @@
     "copy": "Kopyala",
     "copied": "Kopyalandı",
     "steps": {
-      "rule": "E-posta hesabında (Gmail, Outlook, ...) bu adrese bir yönlendirme kuralı oluştur.",
+      "rule": "E-posta hesabında bu adrese, e-postaları asıl göndereniyle ileten bir kural oluştur: Outlook'ta “Yeniden yönlendir” (“İlet” değil), Gmail'de otomatik yönlendirme.",
       "senders": "Kuralı yalnızca fiverr.com, bionluk.com ve arc.dev adreslerinden gelen e-postalarla sınırla; başka hiçbir e-posta hesabından çıkmasın.",
       "check": "Yönlendirilen e-postalar birkaç saniye içinde aşağıdaki listede görünür."
     },

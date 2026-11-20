@@ -147,7 +147,7 @@
     "copy": "Copy",
     "copied": "Copied",
     "steps": {
-      "rule": "In your mailbox (Gmail, Outlook, ...), create a forwarding rule to this address.",
+      "rule": "In your mailbox, create a rule that sends mail to this address with its original sender: in Outlook “Redirect to” (not “Forward to”), in Gmail automatic forwarding.",
       "senders": "Limit the rule to mail from fiverr.com, bionluk.com and arc.dev, so no other mail leaves your mailbox.",
       "check": "Forwarded e-mails appear in the list below within a few seconds."
     },
