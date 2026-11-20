@@ -5,6 +5,7 @@
   },
   "nav": {
     "jobs": "Jobs",
+    "messages": "Messages",
     "settings": "Settings",
     "jobAlerts": "Job alerts",
     "platformMail": "Platform e-mails"
@@ -115,6 +116,9 @@
     },
     "notification": {
       "invalid_push_token": "This device cannot receive notifications. Restart the app and try again."
+    },
+    "messaging": {
+      "conversation_not_found": "This conversation is not available."
     }
   },
   "jobAlerts": {
@@ -138,7 +142,8 @@
     "pushUnsupported": "This app cannot receive notifications here: they need the installed app on a real phone, not Expo Go."
   },
   "notifications": {
-    "jobsChannel": "New jobs"
+    "jobsChannel": "New jobs",
+    "messagesChannel": "New messages"
   },
   "platformMail": {
     "title": "Platform e-mails",
@@ -162,5 +167,20 @@
       "unrecognized": "Not readable yet",
       "unknown_sender": "Not from a platform"
     }
+  },
+  "messages": {
+    "title": "Messages",
+    "empty": "No messages yet. Messages from your platforms appear here as they arrive.",
+    "loadMore": "Show more",
+    "choose": "Choose a conversation to read it.",
+    "unread_one": "{{count}} new",
+    "unread_other": "{{count}} new",
+    "noText": "The notification showed no text.",
+    "openOn": "Reply on {{platform}}",
+    "noticeHint": "{{platform}} is read from its notification e-mails, so you see what each e-mail showed. Read the whole conversation and reply on {{platform}}.",
+    "replyHint": "Replies are written on {{platform}}.",
+    "older": "Show older messages",
+    "you": "You",
+    "mobileHint": "Replies are written on the platform: tap a conversation to open it there."
   }
 }

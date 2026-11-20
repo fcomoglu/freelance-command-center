@@ -5,6 +5,7 @@
   },
   "nav": {
     "jobs": "İlanlar",
+    "messages": "Mesajlar",
     "settings": "Ayarlar",
     "jobAlerts": "İlan bildirimleri",
     "platformMail": "Platform e-postaları"
@@ -115,6 +116,9 @@
     },
     "notification": {
       "invalid_push_token": "Bu cihaz bildirim alamıyor. Uygulamayı yeniden başlatıp tekrar dene."
+    },
+    "messaging": {
+      "conversation_not_found": "Bu konuşmaya ulaşılamıyor."
     }
   },
   "jobAlerts": {
@@ -138,7 +142,8 @@
     "pushUnsupported": "Bildirimler burada çalışmaz: Expo Go değil, gerçek telefonda kurulu uygulama gerekir."
   },
   "notifications": {
-    "jobsChannel": "Yeni ilanlar"
+    "jobsChannel": "Yeni ilanlar",
+    "messagesChannel": "Yeni mesajlar"
   },
   "platformMail": {
     "title": "Platform e-postaları",
@@ -162,5 +167,20 @@
       "unrecognized": "Henüz okunamıyor",
       "unknown_sender": "Platformdan değil"
     }
+  },
+  "messages": {
+    "title": "Mesajlar",
+    "empty": "Henüz mesaj yok. Platformlarından gelen mesajlar geldikçe burada görünür.",
+    "loadMore": "Daha fazla göster",
+    "choose": "Okumak için bir konuşma seç.",
+    "unread_one": "{{count}} yeni",
+    "unread_other": "{{count}} yeni",
+    "noText": "Bildirimde metin yoktu.",
+    "openOn": "{{platform}} üzerinde cevapla",
+    "noticeHint": "{{platform}} bildirim e-postalarından okunur; her e-postada ne görünüyorsa onu görürsün. Konuşmanın tamamını {{platform}} üzerinde oku ve orada cevapla.",
+    "replyHint": "Cevaplar {{platform}} üzerinde yazılır.",
+    "older": "Eski mesajları göster",
+    "you": "Sen",
+    "mobileHint": "Cevaplar platformda yazılır: konuşmayı orada açmak için üzerine dokun."
   }
 }

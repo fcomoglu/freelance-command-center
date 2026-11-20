@@ -6,6 +6,7 @@ import { AuthLayout } from './pages/auth-layout';
 import { ForgotPasswordPage } from './pages/forgot-password';
 import { JobAlertsPage } from './pages/job-alerts';
 import { JobsPage } from './pages/jobs';
+import { MessagesPage } from './pages/messages';
 import { PlatformMailPage } from './pages/platform-mail';
 import { ResetPasswordPage } from './pages/reset-password';
 import { SignInPage } from './pages/sign-in';
@@ -90,6 +91,17 @@ const jobAlertsRoute = createRoute({
   component: JobAlertsPage,
 });
 
+const messagesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/messages',
+  validateSearch: (search: Record<string, unknown>): { conversation?: string } => ({
+    conversation: typeof search.conversation === 'string' ? search.conversation : undefined,
+  }),
+  component: function MessagesRouteComponent() {
+    return <MessagesPage selectedId={messagesRoute.useSearch().conversation} />;
+  },
+});
+
 const platformMailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/platform-mail',
@@ -104,7 +116,7 @@ const routeTree = rootRoute.addChildren([
     verifyEmailRoute,
     resetPasswordRoute,
   ]),
-  appLayoutRoute.addChildren([jobsRoute, jobAlertsRoute, platformMailRoute]),
+  appLayoutRoute.addChildren([jobsRoute, messagesRoute, jobAlertsRoute, platformMailRoute]),
 ]);
 
 export const router = createRouter({ routeTree });
