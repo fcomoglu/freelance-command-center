@@ -102,7 +102,10 @@ Other notes:
 
 - npm workspaces (root `package.json`); shared packages are consumed as TypeScript source (no build step).
 - TypeScript `strict`, Prettier (root `.prettierrc.json`), oxlint (web), ESLint via `expo lint` (mobile).
-  Tests: Vitest (web) and Jest (mobile, Expo default) (planned).
+- Tests: Vitest for web and the shared packages (web screens with jsdom and Testing Library), Jest with `jest-expo`
+  and React Native Testing Library for mobile. Test files sit next to the code as `*.test.ts(x)`; mobile screen tests
+  live in `src/__tests__/`, because `src/app/` holds only routes. Tests mock the API client, not `fetch`, except the
+  API client's own tests.
 - Server state with TanStack Query; API calls only through `packages/api-client` (`createApiClient`). Never edit
   `openapi.json` or `src/schema.d.ts` by hand.
 - Sessions: `createApiClient` also returns a `session` that keeps the access token in memory, refreshes it before it
@@ -178,6 +181,7 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Translation key check | `npm run i18n:check` |
 | Regenerate API types from the committed spec | `npm run api:generate` |
 | Update the committed spec (`packages/api-client/openapi.json`) | `cd apps/api && ./mvnw verify` |
+| Client tests (all, or one workspace) | `npm test` / `npm test -w apps/web` |
 | Lint / type-check / format all clients | `npm run lint` / `npm run typecheck` / `npm run format` |
 | Infrastructure only | `docker compose -f infra/compose.yaml up -d` |
 | Build the container images | `docker build -t fcc-api apps/api` / `docker build -f apps/web/Dockerfile -t fcc-web .` |
@@ -185,5 +189,5 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Local e-mail inbox (Mailpit) | `http://localhost:8025` |
 | Deliver a forwarded platform e-mail locally (`INBOUND_MAIL_SECRET` set in `apps/api/.env`) | `curl -H "Authorization: Bearer <secret>" -H "X-Envelope-To: <inbox address>" -H "Content-Type: message/rfc822" --data-binary @mail.eml http://localhost:8080/api/v1/inbound-mail` |
 
-CI (`.github/workflows/ci.yml`) runs the API build, the client checks (i18n, format, lint, type-check, web build) and
-builds both container images on every push to `main` and every pull request.
+CI (`.github/workflows/ci.yml`) runs the API build, the client checks (i18n, format, lint, type-check, tests, web
+build) and builds both container images on every push to `main` and every pull request.

@@ -317,7 +317,7 @@ The application ships as two container images, independent of the hosting provid
 
 ## Quality gates
 
-- CI on every pull request: build, unit + integration tests, module boundary verification, lint, type-check.
-- Code coverage reported (JaCoCo for the API; Vitest for clients, planned); no fixed vanity threshold, but new
-  code is expected to be tested.
+- CI on every pull request: build, unit + integration tests of the API and the clients, module boundary
+  verification, lint, type-check, container images.
+- Code coverage reported for the API (JaCoCo); no fixed vanity threshold, but new code is expected to be tested.
 - Dependency updates through Dependabot.
