@@ -3,6 +3,11 @@ import { createRootRoute, createRoute, createRouter, Outlet, redirect } from '@t
 import { api } from './api';
 import { AppLayout } from './pages/app-layout';
 import { AuthLayout } from './pages/auth-layout';
+import {
+  type ConnectablePlatform,
+  ConnectedAccountsPage,
+  ConnectionCallbackPage,
+} from './pages/connected-accounts';
 import { ForgotPasswordPage } from './pages/forgot-password';
 import { JobAlertsPage } from './pages/job-alerts';
 import { JobsPage } from './pages/jobs';
@@ -31,6 +36,15 @@ async function requireSession(currentHref: string) {
 const tokenSearch = (search: Record<string, unknown>): { token: string } => ({
   token: typeof search.token === 'string' ? search.token : '',
 });
+
+/** Search values arrive JSON-parsed, so a numeric value is turned back into its text. */
+function searchText(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  return undefined;
+}
+
+const platforms: ConnectablePlatform[] = ['freelancer', 'upwork', 'fiverr', 'bionluk', 'arc_dev'];
 
 const rootRoute = createRootRoute({ component: Outlet });
 
@@ -108,6 +122,35 @@ const platformMailRoute = createRoute({
   component: PlatformMailPage,
 });
 
+const accountsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/accounts',
+  validateSearch: (search: Record<string, unknown>): { connected?: ConnectablePlatform } => ({
+    connected: platforms.find((platform) => platform === search.connected),
+  }),
+  component: function AccountsRouteComponent() {
+    return <ConnectedAccountsPage connected={accountsRoute.useSearch().connected} />;
+  },
+});
+
+// The redirect URI registered with each platform's OAuth app; the platform appends code and state (or error).
+const connectionCallbackRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/connections/$platform/callback',
+  validateSearch: (search: Record<string, unknown>): { code?: string; state?: string } => ({
+    code: searchText(search.code),
+    state: searchText(search.state),
+  }),
+  beforeLoad: ({ params }) => {
+    if (!platforms.some((platform) => platform === params.platform)) throw redirect({ to: '/accounts' });
+  },
+  component: function ConnectionCallbackRouteComponent() {
+    const { platform } = connectionCallbackRoute.useParams();
+    const { code, state } = connectionCallbackRoute.useSearch();
+    return <ConnectionCallbackPage platform={platform as ConnectablePlatform} code={code} state={state} />;
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([
     signInRoute,
@@ -116,7 +159,14 @@ const routeTree = rootRoute.addChildren([
     verifyEmailRoute,
     resetPasswordRoute,
   ]),
-  appLayoutRoute.addChildren([jobsRoute, messagesRoute, jobAlertsRoute, platformMailRoute]),
+  appLayoutRoute.addChildren([
+    jobsRoute,
+    messagesRoute,
+    jobAlertsRoute,
+    platformMailRoute,
+    accountsRoute,
+    connectionCallbackRoute,
+  ]),
 ]);
 
 export const router = createRouter({ routeTree });

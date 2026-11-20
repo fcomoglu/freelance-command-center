@@ -8,7 +8,8 @@
     "messages": "Messages",
     "settings": "Settings",
     "jobAlerts": "Job alerts",
-    "platformMail": "Platform e-mails"
+    "platformMail": "Platform e-mails",
+    "accounts": "Accounts"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -119,6 +120,13 @@
     },
     "messaging": {
       "conversation_not_found": "This conversation is not available."
+    },
+    "platform": {
+      "connection_unavailable": "This platform cannot be connected on this server.",
+      "connection_expired": "This connection attempt has expired. Start connecting again.",
+      "connection_rejected": "The platform refused the connection. Start connecting again.",
+      "connection_not_found": "This account is not connected.",
+      "unavailable": "The platform cannot be reached right now. Try again later."
     }
   },
   "jobAlerts": {
@@ -182,5 +190,27 @@
     "older": "Show older messages",
     "you": "You",
     "mobileHint": "Replies are written on the platform: tap a conversation to open it there."
+  },
+  "accounts": {
+    "title": "Connected accounts",
+    "intro": "Connect a platform account to read its messages through the platform's API: whole messages, sent and received, instead of e-mail notices. Replies are still written on the platform.",
+    "none": "No platform can be connected on this server yet.",
+    "connected": "{{platform}} is connected. Its messages appear in your inbox within a few minutes.",
+    "account": "{{name}} · connected on {{date}}",
+    "status": {
+      "active": "Connected",
+      "reconnect_required": "Connect again",
+      "not_connected": "Not connected"
+    },
+    "reconnectHint": "{{platform}} no longer accepts the access you granted. Connect the account again to keep reading its messages.",
+    "connect": "Connect {{platform}}",
+    "reconnect": "Connect again",
+    "disconnect": "Disconnect",
+    "confirmDisconnect": "Yes, disconnect",
+    "cancel": "Cancel",
+    "disconnectHint": "The application forgets its access; conversations read so far stay in your inbox. You can also withdraw the access in your {{platform}} settings.",
+    "cancelled": "Connecting {{platform}} was cancelled.",
+    "completing": "Completing the connection…",
+    "back": "Back to connected accounts"
   }
 }

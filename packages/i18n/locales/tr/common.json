@@ -8,7 +8,8 @@
     "messages": "Mesajlar",
     "settings": "Ayarlar",
     "jobAlerts": "İlan bildirimleri",
-    "platformMail": "Platform e-postaları"
+    "platformMail": "Platform e-postaları",
+    "accounts": "Hesaplar"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -119,6 +120,13 @@
     },
     "messaging": {
       "conversation_not_found": "Bu konuşmaya ulaşılamıyor."
+    },
+    "platform": {
+      "connection_unavailable": "Bu platform bu sunucuda bağlanamıyor.",
+      "connection_expired": "Bu bağlantı denemesinin süresi doldu. Bağlamaya yeniden başla.",
+      "connection_rejected": "Platform bağlantıyı reddetti. Bağlamaya yeniden başla.",
+      "connection_not_found": "Bu hesap bağlı değil.",
+      "unavailable": "Platforma şu anda ulaşılamıyor. Daha sonra tekrar dene."
     }
   },
   "jobAlerts": {
@@ -182,5 +190,27 @@
     "older": "Eski mesajları göster",
     "you": "Sen",
     "mobileHint": "Cevaplar platformda yazılır: konuşmayı orada açmak için üzerine dokun."
+  },
+  "accounts": {
+    "title": "Bağlı hesaplar",
+    "intro": "Bir platform hesabını bağladığında mesajları platformun API'siyle okunur: e-posta bildirimlerinin yerine gelen ve giden mesajların tamamı. Cevaplar yine platformda yazılır.",
+    "none": "Bu sunucuda henüz bağlanabilecek bir platform yok.",
+    "connected": "{{platform}} bağlandı. Mesajları birkaç dakika içinde gelen kutunda görünür.",
+    "account": "{{name}} · {{date}} tarihinde bağlandı",
+    "status": {
+      "active": "Bağlı",
+      "reconnect_required": "Yeniden bağla",
+      "not_connected": "Bağlı değil"
+    },
+    "reconnectHint": "{{platform}} verdiğin erişimi artık kabul etmiyor. Mesajlarını okumaya devam etmek için hesabı yeniden bağla.",
+    "connect": "{{platform}} hesabını bağla",
+    "reconnect": "Yeniden bağla",
+    "disconnect": "Bağlantıyı kes",
+    "confirmDisconnect": "Evet, bağlantıyı kes",
+    "cancel": "Vazgeç",
+    "disconnectHint": "Uygulama erişimini unutur; şimdiye kadar okunan konuşmalar gelen kutunda kalır. Erişimi {{platform}} ayarlarından da geri alabilirsin.",
+    "cancelled": "{{platform}} bağlantısı iptal edildi.",
+    "completing": "Bağlantı tamamlanıyor…",
+    "back": "Bağlı hesaplara dön"
   }
 }
