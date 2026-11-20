@@ -32,6 +32,11 @@ class TestSupportConfiguration {
     }
 
     @Bean
+    FakeProposalStatusTracker fakeProposalStatusTracker() {
+        return new FakeProposalStatusTracker();
+    }
+
+    @Bean
     FakeMailParser fakeMailParser() {
         return new FakeMailParser();
     }

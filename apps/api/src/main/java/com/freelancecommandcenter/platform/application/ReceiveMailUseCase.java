@@ -2,6 +2,8 @@ package com.freelancecommandcenter.platform.application;
 
 import com.freelancecommandcenter.platform.api.JobDiscovered;
 import com.freelancecommandcenter.platform.api.MessageReceived;
+import com.freelancecommandcenter.platform.api.NotificationReceived;
+import com.freelancecommandcenter.platform.api.PlatformNotification;
 import com.freelancecommandcenter.platform.application.port.out.InboundMailStore;
 import com.freelancecommandcenter.platform.application.port.out.MailInboxRepository;
 import com.freelancecommandcenter.platform.application.port.out.MailReader;
@@ -20,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +32,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Accepts a forwarded e-mail for a workspace inbox (ADR 0012): identifies the platform by the sender, reads the mail
- * with that platform's parsers and stores the raw message. Jobs and messages in the mail are published as private to
- * the workspace.
+ * with that platform's parsers and stores the raw message. Jobs, messages and notifications in the mail are published
+ * as private to the workspace; a platform mail no parser understands is published as a notice (ADR 0015).
  * Re-delivered mails (same Message-ID) are stored and read once.
  */
 @Service
 public class ReceiveMailUseCase {
+
+    /** Long enough to tell what a notice is about; the whole mail stays on the platform and in the user's mailbox. */
+    static final int NOTICE_EXCERPT_LENGTH = 300;
 
     private static final Logger log = LoggerFactory.getLogger(ReceiveMailUseCase.class);
 
@@ -88,10 +94,11 @@ public class ReceiveMailUseCase {
         Status status = platform.isEmpty()
                 ? Status.UNKNOWN_SENDER
                 : parsed.isPresent() ? Status.PROCESSED : Status.UNRECOGNIZED;
+        String messageId = message.messageId().orElseGet(() -> digest(raw));
         InboundMail mail = new InboundMail(
                 Uuids.v7(),
                 workspace,
-                message.messageId().orElseGet(() -> digest(raw)),
+                messageId,
                 platform,
                 message.sender(),
                 message.subject(),
@@ -101,10 +108,11 @@ public class ReceiveMailUseCase {
         if (!mails.save(mail, raw)) {
             return Outcome.DUPLICATE;
         }
-        parsed.ifPresent(content -> {
-            content.jobs().forEach(listing -> events.publishEvent(new JobDiscovered(listing, workspace)));
-            content.messages().forEach(item -> events.publishEvent(new MessageReceived(item, workspace)));
-        });
+        ParsedMail content = parsed.or(() -> platform.map(code -> notice(code, messageId, message, now)))
+                .orElseGet(() -> new ParsedMail(List.of(), List.of(), List.of()));
+        content.jobs().forEach(listing -> events.publishEvent(new JobDiscovered(listing, workspace)));
+        content.messages().forEach(item -> events.publishEvent(new MessageReceived(item, workspace)));
+        content.notifications().forEach(item -> events.publishEvent(new NotificationReceived(item, workspace)));
         return Outcome.STORED;
     }
 
@@ -124,6 +132,21 @@ public class ReceiveMailUseCase {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Shows a platform mail that no parser understands as it is: its subject and the start of its text, linked to the
+     * platform's site. The mail stays unrecognized, so a parser written later can read it again.
+     */
+    private static ParsedMail notice(PlatformCode platform, String messageId, MailMessage message, Instant receivedAt) {
+        return ParsedMail.ofNotifications(List.of(new PlatformNotification(
+                platform,
+                messageId,
+                PlatformNotification.Kind.NOTICE,
+                message.subject().strip(),
+                message.excerpt(NOTICE_EXCERPT_LENGTH),
+                MailSenders.siteOf(platform),
+                message.sentAt().orElse(receivedAt))));
     }
 
     /** Stands in for a missing Message-ID, so identical re-deliveries are still recognized. */

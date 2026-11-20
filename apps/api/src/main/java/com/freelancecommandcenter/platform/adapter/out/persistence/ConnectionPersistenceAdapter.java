@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
 
     private static final String COLUMNS = "id, workspace_id, platform, account_id, account_name, access_token, "
-            + "refresh_token, token_expires_at, status, connected_at, messages_read_until";
+            + "refresh_token, token_expires_at, status, connected_at, messages_read_until, proposals_read_at";
 
     private final JdbcClient jdbc;
     private final TokenCipher cipher;
@@ -54,15 +54,22 @@ class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
                 .list();
     }
 
+    /**
+     * The proposal statuses of the replaced connection belong to its history and go in the same statement, so the new
+     * connection starts with a first read.
+     */
     @Override
     public void replace(PlatformConnection connection) {
-        jdbc.sql("INSERT INTO platform.connections (" + COLUMNS + ") VALUES (:id, :workspaceId, :platform, "
+        jdbc.sql("WITH replaced AS (DELETE FROM platform.proposal_statuses WHERE connection_id IN (SELECT id FROM "
+                        + "platform.connections WHERE workspace_id = :workspaceId AND platform = :platform)) "
+                        + "INSERT INTO platform.connections (" + COLUMNS + ") VALUES (:id, :workspaceId, :platform, "
                         + ":accountId, :accountName, :accessToken, :refreshToken, :expiresAt, :status, :connectedAt, "
-                        + ":readUntil) ON CONFLICT (workspace_id, platform) DO UPDATE SET id = EXCLUDED.id, "
+                        + ":readUntil, :proposalsReadAt) ON CONFLICT (workspace_id, platform) DO UPDATE SET id = EXCLUDED.id, "
                         + "account_id = EXCLUDED.account_id, account_name = EXCLUDED.account_name, "
                         + "access_token = EXCLUDED.access_token, refresh_token = EXCLUDED.refresh_token, "
                         + "token_expires_at = EXCLUDED.token_expires_at, status = EXCLUDED.status, "
-                        + "connected_at = EXCLUDED.connected_at, messages_read_until = EXCLUDED.messages_read_until")
+                        + "connected_at = EXCLUDED.connected_at, messages_read_until = EXCLUDED.messages_read_until, "
+                        + "proposals_read_at = EXCLUDED.proposals_read_at")
                 .param("id", connection.id())
                 .param("workspaceId", connection.workspaceId().value())
                 .param("platform", connection.platform().value())
@@ -76,6 +83,9 @@ class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
                 .param(
                         "readUntil",
                         connection.messagesReadUntil().map(Timestamp::from).orElse(null))
+                .param(
+                        "proposalsReadAt",
+                        connection.proposalsReadAt().map(Timestamp::from).orElse(null))
                 .update();
     }
 
@@ -84,7 +94,7 @@ class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
         jdbc.sql("""
                         UPDATE platform.connections
                         SET access_token = :accessToken, refresh_token = :refreshToken, token_expires_at = :expiresAt,
-                            status = :status, messages_read_until = :readUntil
+                            status = :status, messages_read_until = :readUntil, proposals_read_at = :proposalsReadAt
                         WHERE id = :id
                         """)
                 .param("id", connection.id())
@@ -95,6 +105,9 @@ class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
                 .param(
                         "readUntil",
                         connection.messagesReadUntil().map(Timestamp::from).orElse(null))
+                .param(
+                        "proposalsReadAt",
+                        connection.proposalsReadAt().map(Timestamp::from).orElse(null))
                 .update();
     }
 
@@ -136,6 +149,7 @@ class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
 
     private PlatformConnection connection(ResultSet rs, int row) throws SQLException {
         Timestamp readUntil = rs.getTimestamp("messages_read_until");
+        Timestamp proposalsReadAt = rs.getTimestamp("proposals_read_at");
         return PlatformConnection.restore(
                 rs.getObject("id", UUID.class),
                 new WorkspaceId(rs.getObject("workspace_id", UUID.class)),
@@ -148,6 +162,7 @@ class ConnectionPersistenceAdapter implements PlatformConnectionRepository {
                         cipher.decrypt(rs.getBytes("refresh_token")),
                         rs.getTimestamp("token_expires_at").toInstant()),
                 PlatformConnection.Status.valueOf(rs.getString("status")),
-                readUntil == null ? null : readUntil.toInstant());
+                readUntil == null ? null : readUntil.toInstant(),
+                proposalsReadAt == null ? null : proposalsReadAt.toInstant());
     }
 }

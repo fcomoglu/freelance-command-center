@@ -30,7 +30,7 @@ class ConnectAccountUseCaseTest {
     private final InMemoryConnections connections = new InMemoryConnections();
     private final StubConnector connector = new StubConnector();
     private final ConnectAccountUseCase connecting = new ConnectAccountUseCase(
-            new PlatformRegistry(List.of(), List.of(), List.of(connector), List.of()),
+            new PlatformRegistry(List.of(), List.of(), List.of(connector), List.of(), List.of()),
             connections,
             TestProperties.platform(),
             Clock.fixed(NOW, ZoneOffset.UTC));

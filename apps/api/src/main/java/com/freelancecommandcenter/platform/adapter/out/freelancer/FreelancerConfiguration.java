@@ -4,6 +4,7 @@ import com.freelancecommandcenter.platform.adapter.out.oauth.OAuthTokenClient;
 import com.freelancecommandcenter.platform.application.port.out.AccountConnector;
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
 import com.freelancecommandcenter.platform.application.port.out.MessageSource;
+import com.freelancecommandcenter.platform.application.port.out.ProposalStatusTracker;
 import com.freelancecommandcenter.shared.http.HttpClients;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.net.URI;
@@ -15,8 +16,8 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Registers the Freelancer.com job source when an access token is configured, and account connections with message
- * reading when an OAuth app is configured.
+ * Registers the Freelancer.com job source when an access token is configured, and account connections with message and
+ * bid reading when an OAuth app is configured.
  */
 @Configuration(proxyBeanMethods = false)
 class FreelancerConfiguration {
@@ -63,6 +64,17 @@ class FreelancerConfiguration {
                 json,
                 properties.messagePageSize(),
                 properties.maxMessagePagesPerSync());
+    }
+
+    @Bean
+    @ConditionalOnExpression(OAUTH_APP_CONFIGURED)
+    ProposalStatusTracker freelancerProposalStatusTracker(FreelancerProperties properties, JsonMapper json) {
+        return new FreelancerProposalStatusTracker(
+                client(properties, properties.baseUrl()).build(),
+                properties.baseUrl(),
+                json,
+                properties.bidPageSize(),
+                properties.maxBidPagesPerSync());
     }
 
     private static RestClient.Builder client(FreelancerProperties properties, URI baseUrl) {

@@ -116,7 +116,8 @@
       "too_many_keywords": "You can add up to 20 keywords."
     },
     "notification": {
-      "invalid_push_token": "This device cannot receive notifications. Restart the app and try again."
+      "invalid_push_token": "This device cannot receive notifications. Restart the app and try again.",
+      "not_found": "This notification is not available."
     },
     "messaging": {
       "conversation_not_found": "This conversation is not available."

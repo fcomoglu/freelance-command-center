@@ -40,7 +40,7 @@ public record InboundMail(
     public enum Status {
         /** The content was turned into jobs, messages or notifications. */
         PROCESSED,
-        /** From a supported platform, but no parser understands this kind of mail yet. */
+        /** From a supported platform, but no parser understands this kind of mail yet; it is shown as a notice. */
         UNRECOGNIZED,
         /** Not from a platform read through e-mail. */
         UNKNOWN_SENDER

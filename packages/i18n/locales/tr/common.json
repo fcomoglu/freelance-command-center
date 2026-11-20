@@ -116,7 +116,8 @@
       "too_many_keywords": "En fazla 20 anahtar kelime ekleyebilirsin."
     },
     "notification": {
-      "invalid_push_token": "Bu cihaz bildirim alamıyor. Uygulamayı yeniden başlatıp tekrar dene."
+      "invalid_push_token": "Bu cihaz bildirim alamıyor. Uygulamayı yeniden başlatıp tekrar dene.",
+      "not_found": "Bu bildirime ulaşılamıyor."
     },
     "messaging": {
       "conversation_not_found": "Bu konuşmaya ulaşılamıyor."

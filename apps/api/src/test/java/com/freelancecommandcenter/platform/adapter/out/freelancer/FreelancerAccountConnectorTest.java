@@ -63,17 +63,19 @@ class FreelancerAccountConnectorTest {
                     "",
                     "client-1",
                     "client-secret",
-                    "5",
+                    "2 5",
                     100,
                     5,
                     100,
                     5,
+                    100,
+                    3,
                     Duration.ofSeconds(10),
                     Duration.ofSeconds(30)),
             JsonMapper.builder().build());
 
     @Test
-    void theConsentPageAsksForMessagingAndCarriesTheState() {
+    void theConsentPageAsksForBidsAndMessagingAndCarriesTheState() {
         URI url = connector.authorizationUrl("state+/=", REDIRECT);
 
         assertThat(url.toString()).startsWith(ACCOUNTS + FreelancerAccountConnector.AUTHORIZE_PATH + "?");
@@ -83,7 +85,7 @@ class FreelancerAccountConnectorTest {
         assertThat(decoded(query, "client_id")).isEqualTo("client-1");
         assertThat(decoded(query, "redirect_uri")).isEqualTo(REDIRECT.toString());
         assertThat(decoded(query, "scope")).isEqualTo("basic");
-        assertThat(decoded(query, "advanced_scopes")).isEqualTo("5");
+        assertThat(decoded(query, "advanced_scopes")).isEqualTo("2 5");
         assertThat(decoded(query, "state")).isEqualTo("state+/=");
     }
 

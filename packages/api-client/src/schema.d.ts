@@ -182,7 +182,7 @@ export interface paths {
          * Mark a conversation as read
          * @description Read state is kept by the application; the platform is not told.
          */
-        post: operations["markRead"];
+        post: operations["markRead_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -358,6 +358,60 @@ export interface paths {
          * @description Earlier links stop working. Does nothing when the address is already verified.
          */
         post: operations["resendVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The workspace's platform notifications, newest first */
+        get: operations["notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every notification as read */
+        post: operations["markAllRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{notificationId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a notification as read
+         * @description Read state is kept by the application; the platform is not told.
+         */
+        post: operations["markRead"];
         delete?: never;
         options?: never;
         head?: never;
@@ -552,6 +606,25 @@ export interface components {
             /** @example USD */
             currency: string;
         };
+        Notification: {
+            /** @description Plain text; usually empty for a proposal */
+            body: string;
+            id: string;
+            /**
+             * @description What happened: a decision on one of the user's proposals, or a `notice` that carries the platform's own text
+             * @enum {string}
+             */
+            kind: "proposal_shortlisted" | "proposal_awarded" | "proposal_rejected" | "proposal_revoked" | "notice";
+            /** Format: date-time */
+            occurredAt: string;
+            /** @enum {string} */
+            platform: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            read: boolean;
+            /** @description The job of a proposal, or the subject of a notice; may be empty for a notice */
+            title: string;
+            /** @description Where the user handles the notification on its platform */
+            url: string;
+        };
         PageResponseConversation: {
             items: components["schemas"]["Conversation"][];
             nextCursor?: string;
@@ -566,6 +639,10 @@ export interface components {
         };
         PageResponseMessage: {
             items: components["schemas"]["Message"][];
+            nextCursor?: string;
+        };
+        PageResponseNotification: {
+            items: components["schemas"]["Notification"][];
             nextCursor?: string;
         };
         PageResponsePlatformConnection: {
@@ -852,7 +929,7 @@ export interface operations {
             };
         };
     };
-    markRead: {
+    markRead_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1081,6 +1158,68 @@ export interface operations {
         responses: {
             /** @description Accepted */
             202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    notifications: {
+        parameters: {
+            query?: {
+                /** @description `nextCursor` of the previous page */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseNotification"];
+                };
+            };
+        };
+    };
+    markAllRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notificationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

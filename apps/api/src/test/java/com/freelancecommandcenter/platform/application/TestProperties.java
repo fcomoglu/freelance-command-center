@@ -7,7 +7,8 @@ import org.springframework.util.unit.DataSize;
 /** Platform settings with the defaults of {@code application.yaml}, for use case tests. */
 final class TestProperties {
 
-    static final Duration INITIAL_LOOKBACK = Duration.ofDays(7);
+    static final Duration MESSAGE_LOOKBACK = Duration.ofDays(7);
+    static final Duration PROPOSAL_WINDOW = Duration.ofDays(30);
 
     private TestProperties() {}
 
@@ -15,7 +16,8 @@ final class TestProperties {
         return new PlatformProperties.Connections(
                 URI.create("http://localhost:5173"),
                 "",
-                new PlatformProperties.MessageSync(true, Duration.ofMinutes(2), Duration.ZERO, INITIAL_LOOKBACK));
+                new PlatformProperties.Sync(
+                        true, Duration.ofMinutes(2), Duration.ZERO, MESSAGE_LOOKBACK, PROPOSAL_WINDOW));
     }
 
     static PlatformProperties platform() {

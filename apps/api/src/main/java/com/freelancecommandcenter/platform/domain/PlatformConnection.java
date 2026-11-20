@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /**
  * A workspace's authorized account on a platform (ADR 0014): the OAuth tokens the application reads the account's
- * messages with, and how far the messages have been read. A workspace has at most one connection per platform.
+ * messages and proposals with, and how far they have been read. A workspace has at most one connection per platform.
  */
 public final class PlatformConnection {
 
@@ -30,6 +30,7 @@ public final class PlatformConnection {
     private OAuthTokens tokens;
     private Status status;
     private Instant messagesReadUntil;
+    private Instant proposalsReadAt;
 
     private PlatformConnection(
             UUID id,
@@ -40,7 +41,8 @@ public final class PlatformConnection {
             Instant connectedAt,
             OAuthTokens tokens,
             Status status,
-            Instant messagesReadUntil) {
+            Instant messagesReadUntil,
+            Instant proposalsReadAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.workspaceId = Objects.requireNonNull(workspaceId, "workspaceId");
         this.platform = Objects.requireNonNull(platform, "platform");
@@ -50,6 +52,7 @@ public final class PlatformConnection {
         this.tokens = Objects.requireNonNull(tokens, "tokens");
         this.status = Objects.requireNonNull(status, "status");
         this.messagesReadUntil = messagesReadUntil;
+        this.proposalsReadAt = proposalsReadAt;
     }
 
     public static PlatformConnection connect(
@@ -63,6 +66,7 @@ public final class PlatformConnection {
                 now,
                 account.tokens(),
                 Status.ACTIVE,
+                null,
                 null);
     }
 
@@ -76,9 +80,19 @@ public final class PlatformConnection {
             Instant connectedAt,
             OAuthTokens tokens,
             Status status,
-            Instant messagesReadUntil) {
+            Instant messagesReadUntil,
+            Instant proposalsReadAt) {
         return new PlatformConnection(
-                id, workspaceId, platform, accountId, accountName, connectedAt, tokens, status, messagesReadUntil);
+                id,
+                workspaceId,
+                platform,
+                accountId,
+                accountName,
+                connectedAt,
+                tokens,
+                status,
+                messagesReadUntil,
+                proposalsReadAt);
     }
 
     public void renewTokens(OAuthTokens renewed) {
@@ -102,6 +116,14 @@ public final class PlatformConnection {
     public void recordMessagesRead(Optional<Instant> newest) {
         newest.filter(sentAt -> messagesReadUntil == null || sentAt.isAfter(messagesReadUntil))
                 .ifPresent(sentAt -> messagesReadUntil = sentAt);
+    }
+
+    /**
+     * Records a read of the account's proposals. The first read only learns their statuses: a connection reports the
+     * changes that happen after it was made, not the history of the account.
+     */
+    public void recordProposalsRead(Instant at) {
+        this.proposalsReadAt = Objects.requireNonNull(at, "at");
     }
 
     public UUID id() {
@@ -138,5 +160,10 @@ public final class PlatformConnection {
 
     public Optional<Instant> messagesReadUntil() {
         return Optional.ofNullable(messagesReadUntil);
+    }
+
+    /** When the proposals were last read; empty before the first read. */
+    public Optional<Instant> proposalsReadAt() {
+        return Optional.ofNullable(proposalsReadAt);
     }
 }

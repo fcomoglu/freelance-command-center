@@ -4,6 +4,7 @@ import com.freelancecommandcenter.platform.application.port.out.AccountConnector
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
 import com.freelancecommandcenter.platform.application.port.out.MessageSource;
 import com.freelancecommandcenter.platform.application.port.out.PlatformMailParser;
+import com.freelancecommandcenter.platform.application.port.out.ProposalStatusTracker;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,15 +26,19 @@ public class PlatformRegistry {
     private final Map<PlatformCode, List<PlatformMailParser>> mailParsers = new EnumMap<>(PlatformCode.class);
     private final Map<PlatformCode, AccountConnector> accountConnectors;
     private final Map<PlatformCode, MessageSource> messageSources;
+    private final Map<PlatformCode, ProposalStatusTracker> proposalStatusTrackers;
 
     public PlatformRegistry(
             List<JobSource> jobSources,
             List<PlatformMailParser> mailParsers,
             List<AccountConnector> accountConnectors,
-            List<MessageSource> messageSources) {
+            List<MessageSource> messageSources,
+            List<ProposalStatusTracker> proposalStatusTrackers) {
         this.jobSources = byPlatform(jobSources, JobSource::platform, "job source");
         this.accountConnectors = byPlatform(accountConnectors, AccountConnector::platform, "account connector");
         this.messageSources = byPlatform(messageSources, MessageSource::platform, "message source");
+        this.proposalStatusTrackers =
+                byPlatform(proposalStatusTrackers, ProposalStatusTracker::platform, "proposal status tracker");
         for (PlatformMailParser parser : mailParsers) {
             this.mailParsers
                     .computeIfAbsent(parser.platform(), platform -> new ArrayList<>())
@@ -63,8 +68,12 @@ public class PlatformRegistry {
         return List.copyOf(accountConnectors.keySet());
     }
 
-    public Collection<MessageSource> messageSources() {
-        return List.copyOf(messageSources.values());
+    public Optional<MessageSource> messageSource(PlatformCode platform) {
+        return Optional.ofNullable(messageSources.get(platform));
+    }
+
+    public Optional<ProposalStatusTracker> proposalStatusTracker(PlatformCode platform) {
+        return Optional.ofNullable(proposalStatusTrackers.get(platform));
     }
 
     private static <T> Map<PlatformCode, T> byPlatform(

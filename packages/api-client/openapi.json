@@ -313,7 +313,7 @@
     "/api/v1/conversations/{conversationId}/read" : {
       "post" : {
         "description" : "Read state is kept by the application; the platform is not told.",
-        "operationId" : "markRead",
+        "operationId" : "markRead_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "conversationId",
@@ -622,6 +622,88 @@
         } ],
         "summary" : "Send a new verification e-mail",
         "tags" : [ "Account" ]
+      }
+    },
+    "/api/v1/notifications" : {
+      "get" : {
+        "operationId" : "notifications",
+        "parameters" : [ {
+          "description" : "`nextCursor` of the previous page",
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limit",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseNotification"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The workspace's platform notifications, newest first",
+        "tags" : [ "Notifications" ]
+      }
+    },
+    "/api/v1/notifications/read" : {
+      "post" : {
+        "operationId" : "markAllRead",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mark every notification as read",
+        "tags" : [ "Notifications" ]
+      }
+    },
+    "/api/v1/notifications/{notificationId}/read" : {
+      "post" : {
+        "description" : "Read state is kept by the application; the platform is not told.",
+        "operationId" : "markRead",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "notificationId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mark a notification as read",
+        "tags" : [ "Notifications" ]
       }
     },
     "/api/v1/platform-connections" : {
@@ -1036,6 +1118,43 @@
         },
         "required" : [ "amount", "currency" ]
       },
+      "Notification" : {
+        "type" : "object",
+        "properties" : {
+          "body" : {
+            "type" : "string",
+            "description" : "Plain text; usually empty for a proposal"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "What happened: a decision on one of the user's proposals, or a `notice` that carries the platform's own text",
+            "enum" : [ "proposal_shortlisted", "proposal_awarded", "proposal_rejected", "proposal_revoked", "notice" ]
+          },
+          "occurredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "platform" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          },
+          "read" : {
+            "type" : "boolean"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "The job of a proposal, or the subject of a notice; may be empty for a notice"
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "Where the user handles the notification on its platform"
+          }
+        },
+        "required" : [ "body", "id", "kind", "occurredAt", "platform", "read", "title", "url" ]
+      },
       "PageResponseConversation" : {
         "type" : "object",
         "properties" : {
@@ -1088,6 +1207,21 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Message"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "items" ]
+      },
+      "PageResponseNotification" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Notification"
             }
           },
           "nextCursor" : {

@@ -12,7 +12,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
 | **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Arc.dev and Bionluk (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails whose jobs stay private to your workspace; parsers for the Arc.dev and Bionluk e-mails next) |
 | **Unified messages:** conversations from every platform in one list, with unread state and push notifications; replies are written on the platform | in progress (inbox on web and mobile with push notifications, filled from forwarded e-mails and from connected Freelancer.com and Upwork accounts; not yet tried against the live platforms, whose OAuth apps await approval) |
-| **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
+| **Bid and platform notifications:** decisions on your proposals and platform notices in one feed, with unread state and push notifications | in progress (API: Freelancer.com bid decisions from connected accounts, and every forwarded platform e-mail as a notice; feed on web and mobile next) |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
 | **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |
 | **Multi-language UI** (English, Turkish) | in progress |
@@ -55,12 +55,12 @@ without credentials is left out.
   3. Set `UPWORK_REFRESH_TOKEN` to the `refresh_token` of the answer. The API renews access tokens itself and stores
      every newer refresh token; authorize again only when Upwork rejects it (unused for two weeks).
 
-Users connect their own Freelancer.com account (Connected accounts in the web app) to read its messages. This needs
-an OAuth app, reviewed by Freelancer.com before it works:
+Users connect their own Freelancer.com account (Connected accounts in the web app) to read its messages and the
+decisions on its bids. This needs an OAuth app, reviewed by Freelancer.com before it works:
 
 1. At https://accounts.freelancer.com, open "Develop with Freelancer.com" and create an application with the advanced
-   scope `fln:messaging` and the redirect endpoint `<web address>/connections/freelancer/callback` (locally
-   `http://localhost:5173/connections/freelancer/callback`).
+   scopes `fln:project_manage` (bids are only read) and `fln:messaging`, and the redirect endpoint
+   `<web address>/connections/freelancer/callback` (locally `http://localhost:5173/connections/freelancer/callback`).
 2. Once it is approved, set `FREELANCER_CLIENT_ID` and `FREELANCER_CLIENT_SECRET`, and `PLATFORM_TOKEN_KEY` to 32
    random bytes in base64 (`openssl rand -base64 32`), which encrypts the stored tokens. Keep the key: tokens stored
    under another key cannot be read, and every account must be connected again.

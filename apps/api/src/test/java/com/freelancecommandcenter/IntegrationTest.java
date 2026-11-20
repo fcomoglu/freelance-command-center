@@ -24,7 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
             "fcc.platform.job-sync.enabled=false",
             "fcc.platform.freelancer.access-token=",
             "fcc.platform.freelancer.client-id=",
-            "fcc.platform.connections.message-sync.enabled=false",
+            "fcc.platform.connections.sync.enabled=false",
             "fcc.platform.connections.token-key=" + IntegrationTest.TOKEN_KEY,
             "fcc.platform.upwork.client-id=",
             "fcc.platform.mail.webhook-secret=test-inbound-secret"

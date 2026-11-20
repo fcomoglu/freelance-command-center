@@ -48,22 +48,24 @@ public record PlatformProperties(
      *     app
      * @param tokenKey base64 AES-256 key the stored tokens are encrypted with; required once a platform's OAuth app is
      *     configured; tokens stored under another key cannot be read
-     * @param messageSync the periodic message read of connected accounts
+     * @param sync the periodic read of connected accounts
      */
     public record Connections(
             @DefaultValue("http://localhost:5173") URI redirectBaseUrl,
             @DefaultValue("") String tokenKey,
-            @DefaultValue MessageSync messageSync) {}
+            @DefaultValue Sync sync) {}
 
     /**
      * @param enabled whether the read runs on a schedule
      * @param interval pause between the end of one read and the start of the next
      * @param initialDelay pause after application start before the first read
-     * @param initialLookback how far back the first read of a new connection goes
+     * @param messageLookback how far back the first message read of a new connection goes
+     * @param proposalWindow proposals submitted within this period are checked for status changes
      */
-    public record MessageSync(
+    public record Sync(
             @DefaultValue("true") boolean enabled,
             @DefaultValue("2m") Duration interval,
             @DefaultValue("45s") Duration initialDelay,
-            @DefaultValue("7d") Duration initialLookback) {}
+            @DefaultValue("7d") Duration messageLookback,
+            @DefaultValue("30d") Duration proposalWindow) {}
 }

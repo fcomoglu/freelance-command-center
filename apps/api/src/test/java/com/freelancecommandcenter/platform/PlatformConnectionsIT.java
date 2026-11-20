@@ -7,11 +7,14 @@ import static org.awaitility.Awaitility.await;
 import com.freelancecommandcenter.ApiClient;
 import com.freelancecommandcenter.FakeAccountConnector;
 import com.freelancecommandcenter.FakeMessageSource;
+import com.freelancecommandcenter.FakeProposalStatusTracker;
 import com.freelancecommandcenter.IntegrationTest;
 import com.freelancecommandcenter.platform.api.PlatformMessage;
 import com.freelancecommandcenter.platform.api.PlatformMessage.Detail;
 import com.freelancecommandcenter.platform.api.PlatformMessage.Direction;
-import com.freelancecommandcenter.platform.application.MessageSyncUseCase;
+import com.freelancecommandcenter.platform.application.ConnectionSyncUseCase;
+import com.freelancecommandcenter.platform.domain.ProposalSnapshot;
+import com.freelancecommandcenter.platform.domain.ProposalStatus;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +22,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +31,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Connecting a Freelancer.com account through OAuth, reading its messages into the inbox, and disconnecting it. */
+/**
+ * Connecting a Freelancer.com account through OAuth, reading its messages into the inbox and its bid decisions into the
+ * notification feed, and disconnecting it.
+ */
 @IntegrationTest
 class PlatformConnectionsIT {
 
@@ -40,7 +47,10 @@ class PlatformConnectionsIT {
     private FakeMessageSource messages;
 
     @Autowired
-    private MessageSyncUseCase messageSync;
+    private FakeProposalStatusTracker proposals;
+
+    @Autowired
+    private ConnectionSyncUseCase connectionSync;
 
     @Autowired
     private JdbcClient jdbc;
@@ -74,7 +84,7 @@ class PlatformConnectionsIT {
                 "access-" + code,
                 message(thread, "9001", Direction.INBOUND, "Can you start on Monday?", "2026-11-20T09:00:00Z"),
                 message(thread, "9002", Direction.OUTBOUND, "Yes, I can.", "2026-11-20T09:05:00Z"));
-        messageSync.syncAll();
+        connectionSync.syncAll();
 
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> assertThat(items(api.get("/api/v1/conversations", user)))
@@ -98,6 +108,47 @@ class PlatformConnectionsIT {
         ResponseEntity<Map<String, Object>> again = api.delete(CONNECTIONS + "/freelancer", user);
         assertThat(again.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(again.getBody()).containsEntry("code", "platform.connection_not_found");
+    }
+
+    @Test
+    void decisionsOnTheAccountsBidsAfterConnectingReachTheNotificationFeed() {
+        HttpHeaders user = api.newSignedInUser();
+        String code = UUID.randomUUID().toString();
+        api.post(CONNECTIONS + "/freelancer", Map.of("code", code, "state", startAuthorization(user)), user);
+        proposals.set("access-" + code, bid("7001", ProposalStatus.PENDING), bid("7002", ProposalStatus.AWARDED));
+        connectionSync.syncAll();
+
+        proposals.set(
+                "access-" + code,
+                bid("7001", ProposalStatus.SHORTLISTED),
+                bid("7002", ProposalStatus.AWARDED),
+                bid("7003", ProposalStatus.REJECTED));
+        connectionSync.syncAll();
+        connectionSync.syncAll();
+
+        await().atMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> assertThat(items(api.get("/api/v1/notifications", user)))
+                        .extracting(item -> item.get("kind"), item -> item.get("title"))
+                        .containsExactlyInAnyOrder(
+                                tuple("proposal_shortlisted", "Job 7001"), tuple("proposal_rejected", "Job 7003")));
+        assertThat(items(api.get("/api/v1/notifications", user)))
+                .allSatisfy(item -> assertThat(item)
+                        .containsEntry("platform", "freelancer")
+                        .containsEntry("body", "")
+                        .containsEntry("read", false));
+
+        String again = UUID.randomUUID().toString();
+        api.post(CONNECTIONS + "/freelancer", Map.of("code", again, "state", startAuthorization(user)), user);
+        proposals.set("access-" + again, bid("7001", ProposalStatus.AWARDED));
+        connectionSync.syncAll();
+
+        assertThat(jdbc.sql("SELECT count(*) FROM platform.proposal_statuses s JOIN platform.connections c "
+                                + "ON c.id = s.connection_id WHERE c.account_name = 'Ada L.' AND s.status = 'AWARDED' "
+                                + "AND s.proposal_id = '7001'")
+                        .query(Long.class)
+                        .single())
+                .isPositive();
+        assertThat(items(api.get("/api/v1/notifications", user))).hasSize(2);
     }
 
     @Test
@@ -166,6 +217,11 @@ class PlatformConnectionsIT {
                 body,
                 URI.create("https://www.freelancer.com/messages/thread/" + thread),
                 Instant.parse(sentAt));
+    }
+
+    private static ProposalSnapshot bid(String id, ProposalStatus status) {
+        return new ProposalSnapshot(
+                id, "Job " + id, URI.create("https://www.freelancer.com/projects/" + id), status, Optional.empty());
     }
 
     @SuppressWarnings("unchecked")

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.freelancecommandcenter.platform.api.JobDiscovered;
 import com.freelancecommandcenter.platform.api.JobListing;
+import com.freelancecommandcenter.platform.api.NotificationReceived;
+import com.freelancecommandcenter.platform.api.PlatformNotification;
 import com.freelancecommandcenter.platform.application.ReceiveMailUseCase.Outcome;
 import com.freelancecommandcenter.platform.application.port.out.InboundMailStore;
 import com.freelancecommandcenter.platform.application.port.out.MailInboxRepository;
@@ -64,7 +66,14 @@ class ReceiveMailUseCaseTest {
     }
 
     @Test
-    void aMailNoParserUnderstandsIsStoredAsUnrecognizedEvenWhenAParserFails() {
+    void aMailNoParserUnderstandsIsStoredAsUnrecognizedAndShownAsANoticeEvenWhenAParserFails() {
+        message = new MailMessage(
+                Optional.of("<3@arc.dev>"),
+                "team@arc.dev",
+                " Your profile was viewed ",
+                Optional.empty(),
+                Optional.of("A company looked at\nyour profile."),
+                Optional.empty());
         ReceiveMailUseCase receiver = receiver(parser((mail, at) -> {
             throw new IllegalStateException("unexpected layout");
         }));
@@ -72,7 +81,18 @@ class ReceiveMailUseCaseTest {
         assertThat(receiver.receive(ADDRESS, new byte[0])).isEqualTo(Outcome.STORED);
 
         assertThat(stored).singleElement().extracting(InboundMail::status).isEqualTo(Status.UNRECOGNIZED);
-        assertThat(events).isEmpty();
+        assertThat(events)
+                .singleElement()
+                .isEqualTo(new NotificationReceived(
+                        new PlatformNotification(
+                                PlatformCode.ARC_DEV,
+                                "<3@arc.dev>",
+                                PlatformNotification.Kind.NOTICE,
+                                "Your profile was viewed",
+                                "A company looked at your profile.",
+                                URI.create("https://arc.dev"),
+                                NOW),
+                        INBOX.workspaceId()));
     }
 
     @Test
@@ -91,7 +111,7 @@ class ReceiveMailUseCaseTest {
                 new SingleInbox(),
                 new InMemoryMails(),
                 raw -> message,
-                new PlatformRegistry(List.of(), List.of(parsers), List.of(), List.of()),
+                new PlatformRegistry(List.of(), List.of(parsers), List.of(), List.of(), List.of()),
                 events::add,
                 new PlatformProperties(
                         new PlatformProperties.JobSync(

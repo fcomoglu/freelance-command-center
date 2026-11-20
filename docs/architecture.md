@@ -58,8 +58,8 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 - **Factory** for API clients configured with one connection's credentials.
 - **Mail parsers:** a `PlatformMailParser` (strategy) reads one kind of notification e-mail of a platform into the
   same canonical model, so the rest of the system does not know whether a job came from an API or from an e-mail.
-  `PlatformRegistry` holds any number of parsers per platform; the first one that understands a mail reads it. The
-  parsers for Fiverr, Bionluk and Arc.dev mails are (planned).
+  `PlatformRegistry` holds any number of parsers per platform; the first one that understands a mail reads it. A mail
+  no parser understands is shown as a notice. The parsers for Fiverr, Bionluk and Arc.dev mails are (planned).
 
 ### Job sync
 
@@ -96,9 +96,11 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
   `unrecognized` (platform known, no parser understands the mail) or `unknown_sender`.
 - The platform's mail parsers read the mail in the same transaction. Each job in it is published as a
   `JobDiscovered` event with the workspace as its owner, so it becomes a private job of that workspace and is matched
-  only against its job filter; each message is published as a `MessageReceived` event for the workspace. A
-  redelivered mail publishes nothing. A parser that fails leaves the mail
-  `unrecognized` instead of rejecting it, and the stored raw message can be read again.
+  only against its job filter; each message is published as a `MessageReceived` event and each notification as a
+  `NotificationReceived` event for the workspace. An `unrecognized` mail is published as a notice: its subject, the
+  start of its text and the platform's site ([ADR 0015](adr/0015-platform-notification-feed.md)). A redelivered mail
+  publishes nothing. A parser that fails leaves the mail `unrecognized` instead of rejecting it, and the stored raw
+  message can be read again.
 
 ### New-job notifications
 
@@ -122,8 +124,9 @@ Reasons in [ADR 0014](adr/0014-platform-account-connections.md).
   `/connections/{platform}/callback` (`fcc.platform.connections.redirect-base-url`), which posts `code` and
   `state` to `POST /api/v1/platform-connections/{platform}`. `DELETE` on the same path deletes the tokens.
 - Only platforms whose OAuth app is configured are connectable:
-  - Freelancer.com: `FREELANCER_CLIENT_ID` and `FREELANCER_CLIENT_SECRET`, advanced scope `fln:messaging`; messages
-    from `/api/messages/0.1/messages/` with their threads and users.
+  - Freelancer.com: `FREELANCER_CLIENT_ID` and `FREELANCER_CLIENT_SECRET`, advanced scopes `fln:project_manage` and
+    `fln:messaging`; messages from `/api/messages/0.1/messages/` with their threads and users, bids from
+    `/api/projects/0.1/bids/` with their projects.
   - Upwork: the API key of the job sync with `UPWORK_ACCOUNT_CONNECTIONS=true` and the permissions "Messaging -
     Read-Only Access" and "Common Entities - Read-Only Access"; one GraphQL `roomList` request returns the rooms with
     activity since the last read together with their new stories. Stories without an author (room events) are left
@@ -131,11 +134,16 @@ Reasons in [ADR 0014](adr/0014-platform-account-connections.md).
 - Both platforms use the standard token endpoint (`OAuthTokenClient`).
 - Tokens are stored in `platform.connections` encrypted with AES-256-GCM under `PLATFORM_TOKEN_KEY`; the API does not
   start with a configured OAuth app and no key.
-- `MessageSyncUseCase` reads every active connection every 2 minutes (`fcc.platform.connections.message-sync.*`):
-  tokens are renewed 10 minutes before they expire (Upwork access tokens live a day), the read starts at the newest
-  message read (a new connection looks back 7 days), and the messages are published as `MessageReceived` with the new
-  read position in one transaction. A rejected read is retried once with renewed tokens; a connection whose tokens are
-  still refused becomes `reconnect_required` and is skipped until connected again.
+- `ConnectionSyncUseCase` reads every active connection every 2 minutes (`fcc.platform.connections.sync.*`), its
+  messages and then its proposals in one task, so the two reads never renew the same tokens at once. Tokens are renewed
+  10 minutes before they expire (Upwork access tokens live a day). A rejected read is retried once with renewed tokens;
+  a connection whose tokens are still refused becomes `reconnect_required` and is skipped until connected again.
+  - Messages: the read starts at the newest message read (a new connection looks back 7 days), and the messages are
+    published as `MessageReceived` with the new read position in one transaction.
+  - Proposals (Freelancer.com bids): the proposals submitted in the last 30 days are read with their current status
+    and compared with the status stored at the previous read (`platform.proposal_statuses`); each decision of the
+    client (shortlisted, awarded, rejected, award revoked) is published as `NotificationReceived`. The first read of a
+    connection only stores the statuses.
 
 ### Messages
 
@@ -153,6 +161,21 @@ Reasons in [ADR 0013](adr/0013-unified-messages-with-two-levels-of-detail.md).
 - A new inbound message publishes `MessageArrived`; `notification` pushes it to the workspace's phones like a job
   alert (log `notification.message_notifications`, Android channel `messages`).
 - Replies are written on the platform: the clients link to the conversation there.
+
+### Notifications
+
+Reasons in [ADR 0015](adr/0015-platform-notification-feed.md).
+
+- `platform` delivers every notification as a `NotificationReceived` event in the canonical `PlatformNotification`
+  form: decisions on the user's proposals from the [account connections](#platform-account-connections) and notices
+  from [forwarded e-mails](#forwarded-platform-e-mails). The kind is `proposal_shortlisted`, `proposal_awarded`,
+  `proposal_rejected`, `proposal_revoked` or `notice`; clients translate the kind, a notice carries the platform's own
+  text.
+- `notification` keeps each notification once per workspace and platform id (`notification.notifications`) and lists
+  the feed newest first (`/api/v1/notifications`). Unread state is kept by the application
+  (`POST /api/v1/notifications/{id}/read`, `POST /api/v1/notifications/read` for all).
+- A new notification is pushed to the workspace's phones like a job alert (Android channel `notifications`); a
+  repeated event finds the notification stored and pushes nothing.
 
 ## Backend modules
 

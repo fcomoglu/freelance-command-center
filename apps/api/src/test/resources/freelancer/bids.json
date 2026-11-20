@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "request_id": "made-up",
+  "result": {
+    "bids": [
+      {"id": 7001, "bidder_id": 1001, "project_id": 3001, "retracted": false, "award_status": null, "shortlisted": null, "time_submitted": 1795500000, "frontend_bid_status": "active"},
+      {"id": 7002, "bidder_id": 1001, "project_id": 3002, "retracted": false, "award_status": "pending", "shortlisted": true, "time_submitted": 1795500100, "frontend_bid_status": "active"},
+      {"id": 7003, "bidder_id": 1001, "project_id": 3003, "retracted": false, "award_status": "awarded", "shortlisted": true, "time_awarded": 1795600000, "time_submitted": 1795500200, "frontend_bid_status": "in_progress"},
+      {"id": 7004, "bidder_id": 1001, "project_id": 3001, "retracted": false, "award_status": "rejected", "shortlisted": false, "time_submitted": 1795500300, "frontend_bid_status": "active"},
+      {"id": 7005, "bidder_id": 1001, "project_id": 3002, "retracted": true, "award_status": null, "time_submitted": 1795500400, "frontend_bid_status": "active"},
+      {"id": 7006, "bidder_id": 1001, "project_id": 3003, "retracted": false, "award_status": "revoked", "time_submitted": 1795500500, "frontend_bid_status": "active"},
+      {"id": 7007, "bidder_id": 1001, "project_id": 3999, "retracted": false, "award_status": "canceled", "time_submitted": 1795500600, "frontend_bid_status": "active"},
+      {"id": 7008, "bidder_id": 1001, "retracted": false, "award_status": null, "time_submitted": 1795500700, "frontend_bid_status": "active"}
+    ],
+    "projects": {
+      "3001": {"id": 3001, "title": "Spring Boot REST API", "seo_url": "java/spring-boot-rest-api"},
+      "3002": {"id": 3002, "title": "  Symfony bug fixes  ", "seo_url": "php/symfony-bug-fixes"},
+      "3003": {"id": 3003, "title": "Kotlin migration"}
+    },
+    "users": null
+  }
+}

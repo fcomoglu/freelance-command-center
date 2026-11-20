@@ -138,7 +138,7 @@ class FreelancerMessageSource implements MessageSource {
     }
 
     /** Projections arrive as an object keyed by id or as an array of objects with an {@code id}. */
-    private static JsonNode entry(JsonNode container, String id) {
+    static JsonNode entry(JsonNode container, String id) {
         if (container.isObject()) {
             return container.path(id);
         }
