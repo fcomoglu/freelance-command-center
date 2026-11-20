@@ -15,13 +15,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 // All test requests come from one IP address; per-IP limiting is covered by AuthRateLimitFilterTest. Tests start the
-// job sync themselves, with FakeJobSource in place of the real Freelancer.com adapter.
+// job sync themselves, with FakeJobSource in place of the real platform adapters.
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
             "fcc.identity.auth-requests-per-ip-per-minute=100000",
             "fcc.platform.job-sync.enabled=false",
-            "fcc.platform.freelancer.access-token="
+            "fcc.platform.freelancer.access-token=",
+            "fcc.platform.upwork.client-id="
         })
 @Import({TestcontainersConfiguration.class, TestSupportConfiguration.class})
 @Testcontainers(disabledWithoutDocker = true)

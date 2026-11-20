@@ -39,7 +39,7 @@ flowchart LR
 | Platform | Integration | Notes |
 |---|---|---|
 | Freelancer.com | Official REST API | Server-side job sync with one configured access token; messages and bid status through each user's OAuth 2 connection; bid submission through the API. |
-| Upwork | Official GraphQL API (OAuth 2) | Jobs, messages and proposal status. Requires an approved API key. |
+| Upwork | Official GraphQL API (OAuth 2) | Server-side job sync with the server's own authorized API key; messages and proposal status through each user's OAuth 2 connection. Requires an approved API key. |
 | Fiverr, Bionluk, Arc.dev | Browser extension | Reads pages the user opens/allows inside their own session and sends structured data to the API. Never submits on its own: it pre-fills forms and the user clicks submit. |
 
 Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-style-and-platform-patterns.md)):
@@ -64,11 +64,17 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 `fcc.platform.job-sync.*`):
 
 - The jobs read this way are public and shared by all workspaces
-  ([ADR 0007](adr/0007-module-boundaries-and-data-ownership.md)), so one access token from the server configuration is
-  enough (`FREELANCER_ACCESS_TOKEN`). A platform without a configured token is not registered.
-- A per-platform **high-watermark** (the newest listing update seen) limits each request to listings updated since the
-  last run. A run reads a bounded number of pages, oldest update first, so a backlog is worked off over several runs
-  within the platform's rate limits. A failed run keeps the watermark, and the next run reads the same period again.
+  ([ADR 0007](adr/0007-module-boundaries-and-data-ownership.md)), so one credential per platform from the server
+  configuration is enough. A platform without configured credentials is not registered.
+  - Freelancer.com: a personal access token (`FREELANCER_ACCESS_TOKEN`).
+  - Upwork: an API key and a refresh token from authorizing it once (`UPWORK_*`). Access tokens live 24 hours and
+    are renewed with the refresh grant by a request interceptor, which also retries a request once after a 401. Upwork
+    may rotate the refresh token, so the newest one is stored in `platform.oauth_refresh_tokens`.
+- A per-platform **high-watermark** (the newest listing update seen) limits each run to listings updated since the
+  last run, and a run reads a bounded number of pages to stay within the platform's rate limits. Freelancer.com lists
+  by update time, oldest first, so a backlog is worked off over several runs without gaps. The Upwork search has no
+  update-time filter: it is read newest first until the first known job, so a burst larger than one run is skipped.
+  A failed run keeps the watermark, and the next run reads the same period again.
 - Each run stores the raw payloads and one `JobDiscovered` event per listing in one transaction (outbox); the
   platform call itself happens outside the transaction.
 - `job` turns each event into a catalog job, unique per platform listing. Only a newer platform update changes a

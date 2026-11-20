@@ -1,11 +1,10 @@
 package com.freelancecommandcenter.platform.adapter.out.freelancer;
 
+import com.freelancecommandcenter.platform.adapter.out.HttpClients;
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
-import java.net.http.HttpClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -28,16 +27,10 @@ class FreelancerConfiguration {
 
     /** An API client authenticated with the configured token. */
     static RestClient apiClient(FreelancerProperties properties) {
-        HttpClient http = HttpClient.newBuilder()
-                .connectTimeout(properties.connectTimeout())
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(http);
-        requestFactory.setReadTimeout(properties.readTimeout());
         return RestClient.builder()
                 .baseUrl(properties.baseUrl().toString())
                 .defaultHeader(TOKEN_HEADER, properties.accessToken())
-                .requestFactory(requestFactory)
+                .requestFactory(HttpClients.withTimeouts(properties.connectTimeout(), properties.readTimeout()))
                 .build();
     }
 }

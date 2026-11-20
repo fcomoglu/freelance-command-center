@@ -64,3 +64,7 @@ fcc:
   platform:
     freelancer:
       access-token: ${FREELANCER_ACCESS_TOKEN:}
+    upwork:
+      client-id: ${UPWORK_CLIENT_ID:}
+      client-secret: ${UPWORK_CLIENT_SECRET:}
+      refresh-token: ${UPWORK_REFRESH_TOKEN:}

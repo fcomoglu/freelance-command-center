@@ -1,0 +1,36 @@
+query jobSearch($filter: MarketplaceJobPostingsSearchFilter, $sort: [MarketplaceJobPostingSearchSortAttribute]) {
+  marketplaceJobPostingsSearch(marketPlaceJobFilter: $filter, sortAttributes: $sort) {
+    edges {
+      node {
+        id
+        ciphertext
+        title
+        description
+        createdDateTime
+        publishedDateTime
+        renewedDateTime
+        totalApplicants
+        amount {
+          rawValue
+          currency
+        }
+        hourlyBudgetMin {
+          rawValue
+          currency
+        }
+        hourlyBudgetMax {
+          rawValue
+          currency
+        }
+        skills {
+          name
+          prettyName
+        }
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+}

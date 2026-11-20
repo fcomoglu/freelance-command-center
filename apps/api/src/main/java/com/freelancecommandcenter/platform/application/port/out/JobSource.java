@@ -14,8 +14,10 @@ public interface JobSource {
     PlatformCode platform();
 
     /**
-     * Open listings updated at or after {@code since}, oldest update first. May return only the oldest part when there
-     * are many; the next call continues from the newest update returned.
+     * Open listings updated at or after {@code since}; the next call continues from the newest update returned. A run
+     * reads a bounded number of requests, so after a burst a source returns only part of the listings: the oldest part
+     * where the platform can list by update time (no gaps), the newest part where it can only list newest first (the
+     * rest of the burst is skipped).
      *
      * @throws PlatformUnavailableException when the platform cannot be read right now
      */
