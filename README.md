@@ -10,7 +10,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | Feature | Status |
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
-| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile; push notifications and the extension platforms next) |
+| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android; the extension platforms next) |
 | **Unified messages:** conversations from every platform in one list, with unread state and push notifications | planned |
 | **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
@@ -37,7 +37,7 @@ npm install                           # TypeScript workspaces (web, mobile, shar
 cd apps/api && ./mvnw verify          # backend build and tests
 cd apps/api && ./mvnw spring-boot:run # API on http://localhost:8080 (starts PostgreSQL, Redis and Mailpit via Docker Compose)
 npm run web:dev                       # web app on http://localhost:5173; e-mails arrive in Mailpit, http://localhost:8025
-npm run mobile:start                  # mobile app (Expo)
+npm run mobile:start                  # mobile app; press s to switch between the development build and Expo Go
 ```
 
 ### Platform credentials
@@ -58,6 +58,24 @@ without credentials is left out.
 
 The mobile app calls `http://localhost:8080` (Android emulator: `http://10.0.2.2:8080`). On a physical device, set
 `EXPO_PUBLIC_API_URL` to your computer's LAN address, e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.20:8080`.
+
+### Push notifications on Android
+
+Job alerts reach the phone through the Expo Push Service and Firebase Cloud Messaging. Expo Go cannot receive them;
+the app needs a development build with your own Expo and Firebase projects:
+
+1. Create a free Expo account, then in `apps/mobile`: `npx eas-cli@latest login` and
+   `npx eas-cli@latest init --id <project id>` after creating a project on expo.dev (or let `init` create one). Set
+   `EAS_PROJECT_ID` to the project id; for EAS builds add it as an EAS environment variable
+   (`npx eas-cli@latest env:create`).
+2. In a Firebase project, add an Android app with the package `com.freelancecommandcenter.app` and download its
+   `google-services.json` (git-ignored). Add it as the EAS file environment variable `GOOGLE_SERVICES_JSON`
+   (`npx eas-cli@latest env:create`); for local builds set `GOOGLE_SERVICES_JSON` to the path of the file.
+3. Create a service account key in Firebase (Project settings, Service accounts) and upload it as the FCM V1 key:
+   `npx eas-cli@latest credentials` (Android, Google Service Account, push notifications).
+4. Build and install the development build: `npx eas-cli@latest build --profile development --platform android`,
+   then open the install link on the phone.
+5. Start Metro with `npm run mobile:start`, open the app, and turn on notifications under Settings.
 
 ## Documentation
 

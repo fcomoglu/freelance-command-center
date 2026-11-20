@@ -8,6 +8,7 @@ import { useColorScheme } from 'react-native';
 
 import { api, queryClient } from '@/api';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { useSessionStatus } from '@/hooks/use-session-status';
 
 SplashScreen.preventAutoHideAsync();
@@ -20,6 +21,7 @@ api.session.subscribe(() => {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const status = useSessionStatus();
+  usePushNotifications(status === 'signedIn');
 
   useEffect(() => {
     void api.session.restore();

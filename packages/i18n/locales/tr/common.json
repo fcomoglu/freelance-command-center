@@ -128,6 +128,15 @@
     "noKeywords": "En az bir anahtar kelime ekle; anahtar kelime olmadan bildirim gelmez.",
     "platforms": "Platformlar",
     "save": "Kaydet",
-    "saved": "Kaydedildi."
+    "saved": "Kaydedildi.",
+    "pushOn": "Bu telefonda bildirimler açık.",
+    "pushOff": "Bu telefonda bildirimler kapalı.",
+    "enablePush": "Bildirimleri aç",
+    "disablePush": "Bildirimleri kapat",
+    "pushDenied": "Bildirimler engelli. Telefon ayarlarından bu uygulamaya izin ver.",
+    "pushUnsupported": "Bildirimler burada çalışmaz: Expo Go değil, gerçek telefonda kurulu uygulama gerekir."
+  },
+  "notifications": {
+    "jobsChannel": "Yeni ilanlar"
   }
 }

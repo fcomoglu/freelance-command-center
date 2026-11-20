@@ -174,6 +174,7 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Web: production build | `npm run web:build` |
 | Mobile: start Expo | `npm run mobile:start` |
 | Mobile: add a package | `cd apps/mobile && npx expo install <package>` |
+| Mobile: Android development build (EAS, needed for push) | `cd apps/mobile && npx eas-cli@latest build --profile development --platform android` |
 | Translation key check | `npm run i18n:check` |
 | Regenerate API types from the committed spec | `npm run api:generate` |
 | Update the committed spec (`packages/api-client/openapi.json`) | `cd apps/api && ./mvnw verify` |

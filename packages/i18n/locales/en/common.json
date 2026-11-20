@@ -128,6 +128,15 @@
     "noKeywords": "Add at least one keyword; without keywords you get no notifications.",
     "platforms": "Platforms",
     "save": "Save",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "pushOn": "Notifications on this phone are on.",
+    "pushOff": "Notifications on this phone are off.",
+    "enablePush": "Turn on notifications",
+    "disablePush": "Turn off notifications",
+    "pushDenied": "Notifications are blocked. Allow them for this app in the phone settings.",
+    "pushUnsupported": "This app cannot receive notifications here: they need the installed app on a real phone, not Expo Go."
+  },
+  "notifications": {
+    "jobsChannel": "New jobs"
   }
 }

@@ -8,6 +8,7 @@ import { Button, Notice } from '@/components/form';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { describeError } from '@/problem';
+import { disablePush } from '@/push';
 
 /** Signed-in account: address, verification state and sign-out. */
 export function AccountSection() {
@@ -16,7 +17,13 @@ export function AccountSection() {
   const resend = useMutation({
     mutationFn: () => unwrap(api.fetchClient.POST('/api/v1/me/email-verification')),
   });
-  const signOut = useMutation({ mutationFn: () => api.session.signOut() });
+  const signOut = useMutation({
+    mutationFn: async () => {
+      // Best effort: a phone left registered moves to the next user who signs in on it.
+      await disablePush().catch(() => undefined);
+      await api.session.signOut();
+    },
+  });
 
   return (
     <View style={styles.section}>
