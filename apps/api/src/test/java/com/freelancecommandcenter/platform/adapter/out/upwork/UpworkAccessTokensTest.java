@@ -138,6 +138,7 @@ class UpworkAccessTokensTest {
                 20,
                 3,
                 100,
+                50,
                 Duration.ofSeconds(10),
                 Duration.ofSeconds(30));
         return new UpworkAccessTokens(

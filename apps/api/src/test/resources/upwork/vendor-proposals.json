@@ -1,0 +1,56 @@
+{
+  "data": {
+    "offered": {
+      "edges": [
+        {
+          "node": {
+            "id": "1690000000000000001",
+            "marketplaceJobPosting": {"id": "2001", "content": {"title": "  Spring Boot REST API  "}},
+            "status": {"status": "Offered"},
+            "auditDetails": {"createdDateTime": "2026-11-10T09:00:00Z", "modifiedDateTime": "2026-11-20T10:00:00Z"}
+          }
+        }
+      ]
+    },
+    "hired": {
+      "edges": [
+        {
+          "node": {
+            "id": "1690000000000000002",
+            "marketplaceJobPosting": {"id": "2002", "content": null},
+            "status": {"status": "Hired"},
+            "auditDetails": {"createdDateTime": "1795000000000", "modifiedDateTime": null}
+          }
+        },
+        {
+          "node": {
+            "id": "1690000000000000003",
+            "marketplaceJobPosting": {"id": "2003", "content": {"title": "Submitted long ago"}},
+            "status": {"status": "Hired"},
+            "auditDetails": {"createdDateTime": "2026-09-01T09:00:00Z", "modifiedDateTime": "2026-11-20T11:00:00Z"}
+          }
+        }
+      ]
+    },
+    "declined": {
+      "edges": [
+        {
+          "node": {
+            "id": "1690000000000000004",
+            "marketplaceJobPosting": {"id": "2004", "content": {"title": "Symfony bug fixes"}},
+            "status": {"status": "Declined"},
+            "auditDetails": {"createdDateTime": "2026-11-18T09:00:00Z", "modifiedDateTime": "2026-11-21T08:00:00Z"}
+          }
+        },
+        {
+          "node": {
+            "id": "1690000000000000005",
+            "marketplaceJobPosting": {"id": "2005", "content": {"title": "No longer supported status"}},
+            "status": {"status": "Rejected"},
+            "auditDetails": {"createdDateTime": "2026-11-18T09:00:00Z", "modifiedDateTime": "2026-11-21T08:00:00Z"}
+          }
+        }
+      ]
+    }
+  }
+}

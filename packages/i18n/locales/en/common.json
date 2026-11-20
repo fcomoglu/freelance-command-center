@@ -154,7 +154,7 @@
   },
   "notifications": {
     "title": "Notifications",
-    "intro": "Decisions on your Freelancer.com bids come from your connected account. Everything else your platforms e-mail you appears as a notice with the subject and the start of the e-mail.",
+    "intro": "Decisions on your Freelancer.com bids and Upwork proposals come from your connected accounts. Everything else your platforms e-mail you appears as a notice with the subject and the start of the e-mail.",
     "empty": "No notifications yet. They appear here as your platforms send them.",
     "loadMore": "Show more",
     "markAllRead": "Mark all as read",

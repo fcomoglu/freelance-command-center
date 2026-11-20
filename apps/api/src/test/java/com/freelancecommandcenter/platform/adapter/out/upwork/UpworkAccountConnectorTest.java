@@ -65,6 +65,7 @@ class UpworkAccountConnectorTest {
                     20,
                     3,
                     100,
+                    50,
                     Duration.ofSeconds(10),
                     Duration.ofSeconds(30)),
             UpworkConfiguration.query(UpworkConfiguration.CURRENT_USER_QUERY));

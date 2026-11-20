@@ -128,9 +128,12 @@ Reasons in [ADR 0014](adr/0014-platform-account-connections.md).
     `fln:messaging`; messages from `/api/messages/0.1/messages/` with their threads and users, bids from
     `/api/projects/0.1/bids/` with their projects.
   - Upwork: the API key of the job sync with `UPWORK_ACCOUNT_CONNECTIONS=true` and the permissions "Messaging -
-    Read-Only Access" and "Common Entities - Read-Only Access"; one GraphQL `roomList` request returns the rooms with
-    activity since the last read together with their new stories. Stories without an author (room events) are left
-    out.
+    Read-Only Access", "Common Entities - Read-Only Access" and "Client Proposals - Read And Write Access" (Upwork has
+    no read-only permission for proposals; the application only reads them). One GraphQL `roomList` request returns
+    the rooms with activity since the last read together with their new stories; stories without an author (room
+    events) are left out. One `vendorProposals` request returns the 50 most recently changed proposals in each
+    status that is a client's decision (offered, hired, declined), since the filter takes a single status; an offer
+    and the hire that follows it are both the award.
 - Both platforms use the standard token endpoint (`OAuthTokenClient`).
 - Tokens are stored in `platform.connections` encrypted with AES-256-GCM under `PLATFORM_TOKEN_KEY`; the API does not
   start with a configured OAuth app and no key.
@@ -140,10 +143,10 @@ Reasons in [ADR 0014](adr/0014-platform-account-connections.md).
   a connection whose tokens are still refused becomes `reconnect_required` and is skipped until connected again.
   - Messages: the read starts at the newest message read (a new connection looks back 7 days), and the messages are
     published as `MessageReceived` with the new read position in one transaction.
-  - Proposals (Freelancer.com bids): the proposals submitted in the last 30 days are read with their current status
-    and compared with the status stored at the previous read (`platform.proposal_statuses`); each decision of the
-    client (shortlisted, awarded, rejected, award revoked) is published as `NotificationReceived`. The first read of a
-    connection only stores the statuses.
+  - Proposals (Freelancer.com bids, Upwork proposals): the proposals submitted in the last 30 days are read with
+    their current status and compared with the status stored at the previous read (`platform.proposal_statuses`);
+    each decision of the client (shortlisted, awarded, rejected, award revoked) is published as
+    `NotificationReceived`. The first read of a connection only stores the statuses.
 
 ### Messages
 

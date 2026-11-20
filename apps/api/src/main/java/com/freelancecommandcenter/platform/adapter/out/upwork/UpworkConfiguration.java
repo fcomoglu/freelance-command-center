@@ -4,6 +4,7 @@ import com.freelancecommandcenter.platform.adapter.out.oauth.OAuthTokenClient;
 import com.freelancecommandcenter.platform.application.port.out.AccountConnector;
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
 import com.freelancecommandcenter.platform.application.port.out.MessageSource;
+import com.freelancecommandcenter.platform.application.port.out.ProposalStatusTracker;
 import com.freelancecommandcenter.shared.http.HttpClients;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.io.IOException;
@@ -20,8 +21,8 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Registers the Upwork job source when an API key is configured, and account connections with message reading when
- * they are enabled for the key.
+ * Registers the Upwork job source when an API key is configured, and account connections with message and proposal
+ * reading when they are enabled for the key.
  */
 @Configuration(proxyBeanMethods = false)
 class UpworkConfiguration {
@@ -29,6 +30,7 @@ class UpworkConfiguration {
     static final String JOB_SEARCH_QUERY = "platform/upwork/job-search.graphql";
     static final String CURRENT_USER_QUERY = "platform/upwork/current-user.graphql";
     static final String ROOM_MESSAGES_QUERY = "platform/upwork/room-messages.graphql";
+    static final String VENDOR_PROPOSALS_QUERY = "platform/upwork/vendor-proposals.graphql";
 
     private static final String ACCOUNT_CONNECTIONS_ENABLED =
             "!'${fcc.platform.upwork.client-id:}'.isBlank()" + " and ${fcc.platform.upwork.account-connections:false}";
@@ -84,6 +86,16 @@ class UpworkConfiguration {
                 properties.roomPageSize(),
                 properties.maxRoomPagesPerSync(),
                 properties.storiesPerRoom());
+    }
+
+    @Bean
+    @ConditionalOnExpression(ACCOUNT_CONNECTIONS_ENABLED)
+    ProposalStatusTracker upworkProposalStatusTracker(UpworkProperties properties, JsonMapper json) {
+        return new UpworkProposalStatusTracker(
+                accountApi(properties, json),
+                properties.siteUrl(),
+                query(VENDOR_PROPOSALS_QUERY),
+                properties.proposalPageSize());
     }
 
     private static UpworkAccountApi accountApi(UpworkProperties properties, JsonMapper json) {

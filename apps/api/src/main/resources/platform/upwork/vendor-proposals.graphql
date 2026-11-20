@@ -1,0 +1,34 @@
+# The filter takes one status, so one request asks for the most recently changed proposals in each status that is a
+# client's decision: an offer, a hire, a decline.
+query vendorProposals($pagination: Pagination!, $sort: VendorProposalSortAttribute!) {
+  offered: vendorProposals(filter: { status_eq: Offered }, sortAttribute: $sort, pagination: $pagination) {
+    ...proposals
+  }
+  hired: vendorProposals(filter: { status_eq: Hired }, sortAttribute: $sort, pagination: $pagination) {
+    ...proposals
+  }
+  declined: vendorProposals(filter: { status_eq: Declined }, sortAttribute: $sort, pagination: $pagination) {
+    ...proposals
+  }
+}
+
+fragment proposals on VendorProposalsConnection {
+  edges {
+    node {
+      id
+      marketplaceJobPosting {
+        id
+        content {
+          title
+        }
+      }
+      status {
+        status
+      }
+      auditDetails {
+        createdDateTime
+        modifiedDateTime
+      }
+    }
+  }
+}

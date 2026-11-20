@@ -154,7 +154,7 @@
   },
   "notifications": {
     "title": "Bildirimler",
-    "intro": "Freelancer.com tekliflerindeki kararlar bağlı hesabından gelir. Platformlarının sana e-postayla bildirdiği diğer her şey, konusu ve metninin başıyla bildirim olarak görünür.",
+    "intro": "Freelancer.com ve Upwork tekliflerindeki kararlar bağlı hesaplarından gelir. Platformlarının sana e-postayla bildirdiği diğer her şey, konusu ve metninin başıyla bildirim olarak görünür.",
     "empty": "Henüz bildirim yok. Platformların gönderdikçe burada görünür.",
     "loadMore": "Daha fazla göster",
     "markAllRead": "Tümünü okundu say",
