@@ -5,7 +5,8 @@
   },
   "nav": {
     "jobs": "İlanlar",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "jobAlerts": "İlan bildirimleri"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -114,5 +115,19 @@
     "notification": {
       "invalid_push_token": "Bu cihaz bildirim alamıyor. Uygulamayı yeniden başlatıp tekrar dene."
     }
+  },
+  "jobAlerts": {
+    "title": "İlan bildirimleri",
+    "intro": "Yeni bir ilan anahtar kelimelerinle eşleştiğinde bildirim al: başlığında, açıklamasında veya becerilerinde kelimelerden biri tam kelime ya da ifade olarak geçmeli.",
+    "mobileHint": "Bildirimler mobil uygulamaya gelir. Uygulamada Ayarlar bölümünden aç.",
+    "keywords": "Anahtar kelimeler",
+    "keywordsHint": "{{used}} / {{max}}. Büyük-küçük harf fark etmez.",
+    "keywordPlaceholder": "ör. spring boot",
+    "add": "Ekle",
+    "remove": "{{keyword}} kaldır",
+    "noKeywords": "En az bir anahtar kelime ekle; anahtar kelime olmadan bildirim gelmez.",
+    "platforms": "Platformlar",
+    "save": "Kaydet",
+    "saved": "Kaydedildi."
   }
 }

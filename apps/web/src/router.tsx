@@ -4,6 +4,7 @@ import { api } from './api';
 import { AppLayout } from './pages/app-layout';
 import { AuthLayout } from './pages/auth-layout';
 import { ForgotPasswordPage } from './pages/forgot-password';
+import { JobAlertsPage } from './pages/job-alerts';
 import { JobsPage } from './pages/jobs';
 import { ResetPasswordPage } from './pages/reset-password';
 import { SignInPage } from './pages/sign-in';
@@ -82,6 +83,12 @@ const appLayoutRoute = createRoute({
 
 const jobsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/', component: JobsPage });
 
+const jobAlertsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/job-alerts',
+  component: JobAlertsPage,
+});
+
 const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([
     signInRoute,
@@ -90,7 +97,7 @@ const routeTree = rootRoute.addChildren([
     verifyEmailRoute,
     resetPasswordRoute,
   ]),
-  appLayoutRoute.addChildren([jobsRoute]),
+  appLayoutRoute.addChildren([jobsRoute, jobAlertsRoute]),
 ]);
 
 export const router = createRouter({ routeTree });

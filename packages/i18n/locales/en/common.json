@@ -5,7 +5,8 @@
   },
   "nav": {
     "jobs": "Jobs",
-    "settings": "Settings"
+    "settings": "Settings",
+    "jobAlerts": "Job alerts"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -114,5 +115,19 @@
     "notification": {
       "invalid_push_token": "This device cannot receive notifications. Restart the app and try again."
     }
+  },
+  "jobAlerts": {
+    "title": "Job alerts",
+    "intro": "Get a notification when a new job matches your keywords: its title, description or skills contain one of them as a whole word or phrase.",
+    "mobileHint": "Notifications arrive in the mobile app. Turn them on there under Settings.",
+    "keywords": "Keywords",
+    "keywordsHint": "{{used}} of {{max}}. Case does not matter.",
+    "keywordPlaceholder": "e.g. spring boot",
+    "add": "Add",
+    "remove": "Remove {{keyword}}",
+    "noKeywords": "Add at least one keyword; without keywords you get no notifications.",
+    "platforms": "Platforms",
+    "save": "Save",
+    "saved": "Saved."
   }
 }
