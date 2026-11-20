@@ -17,6 +17,9 @@ export default function AppTabs() {
           <TabTrigger name="index" href="/" asChild>
             <TabButton>{t('nav.jobs')}</TabButton>
           </TabTrigger>
+          <TabTrigger name="messages" href="/messages" asChild>
+            <TabButton>{t('nav.messages')}</TabButton>
+          </TabTrigger>
           <TabTrigger name="settings" href="/settings" asChild>
             <TabButton>{t('nav.settings')}</TabButton>
           </TabTrigger>
