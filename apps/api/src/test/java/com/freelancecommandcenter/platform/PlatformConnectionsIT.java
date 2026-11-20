@@ -9,6 +9,7 @@ import com.freelancecommandcenter.FakeAccountConnector;
 import com.freelancecommandcenter.FakeMessageSource;
 import com.freelancecommandcenter.FakeProposalStatusTracker;
 import com.freelancecommandcenter.IntegrationTest;
+import com.freelancecommandcenter.Mailbox;
 import com.freelancecommandcenter.platform.api.PlatformMessage;
 import com.freelancecommandcenter.platform.api.PlatformMessage.Detail;
 import com.freelancecommandcenter.platform.api.PlatformMessage.Direction;
@@ -44,6 +45,9 @@ class PlatformConnectionsIT {
     private ApiClient api;
 
     @Autowired
+    private Mailbox mailbox;
+
+    @Autowired
     private FakeMessageSource messages;
 
     @Autowired
@@ -57,7 +61,7 @@ class PlatformConnectionsIT {
 
     @Test
     void aConnectedAccountsMessagesReachTheWorkspaceInboxWithFullDetail() {
-        HttpHeaders user = api.newSignedInUser();
+        HttpHeaders user = api.newVerifiedUser(mailbox);
         String code = UUID.randomUUID().toString();
         List<Map<String, Object>> before = items(api.get(CONNECTIONS, user));
         assertThat(before).hasSize(1);
@@ -112,7 +116,7 @@ class PlatformConnectionsIT {
 
     @Test
     void decisionsOnTheAccountsBidsAfterConnectingReachTheNotificationFeed() {
-        HttpHeaders user = api.newSignedInUser();
+        HttpHeaders user = api.newVerifiedUser(mailbox);
         String code = UUID.randomUUID().toString();
         api.post(CONNECTIONS + "/freelancer", Map.of("code", code, "state", startAuthorization(user)), user);
         proposals.set("access-" + code, bid("7001", ProposalStatus.PENDING), bid("7002", ProposalStatus.AWARDED));
@@ -153,8 +157,8 @@ class PlatformConnectionsIT {
 
     @Test
     void anAuthorizationCompletesOnceAndOnlyInTheWorkspaceThatStartedIt() {
-        HttpHeaders user = api.newSignedInUser();
-        HttpHeaders other = api.newSignedInUser();
+        HttpHeaders user = api.newVerifiedUser(mailbox);
+        HttpHeaders other = api.newVerifiedUser(mailbox);
         String state = startAuthorization(user);
 
         ResponseEntity<Map<String, Object>> foreign =
@@ -170,7 +174,7 @@ class PlatformConnectionsIT {
 
     @Test
     void aRefusedAuthorizationConnectsNothing() {
-        HttpHeaders user = api.newSignedInUser();
+        HttpHeaders user = api.newVerifiedUser(mailbox);
 
         ResponseEntity<Map<String, Object>> refused = api.post(
                 CONNECTIONS + "/freelancer",
@@ -183,8 +187,17 @@ class PlatformConnectionsIT {
     }
 
     @Test
+    void connectingRequiresAConfirmedEmailAddress() {
+        ResponseEntity<Map<String, Object>> response =
+                api.post(CONNECTIONS + "/freelancer/authorizations", Map.of(), api.newSignedInUser());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getBody()).containsEntry("code", "platform.email_not_verified");
+    }
+
+    @Test
     void platformsWithoutAnOAuthAppCannotBeConnected() {
-        HttpHeaders user = api.newSignedInUser();
+        HttpHeaders user = api.newVerifiedUser(mailbox);
 
         ResponseEntity<Map<String, Object>> response = api.post(CONNECTIONS + "/upwork/authorizations", Map.of(), user);
 

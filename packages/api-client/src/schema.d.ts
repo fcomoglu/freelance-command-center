@@ -473,7 +473,7 @@ export interface paths {
         put?: never;
         /**
          * Start connecting an account
-         * @description Send the user to `authorizationUrl`. The platform returns them to the web client at `/connections/{platform}/callback` with `code` and `state`, which complete the connection.
+         * @description Send the user to `authorizationUrl`. The platform returns them to the web client at `/connections/{platform}/callback` with `code` and `state`, which complete the connection. Requires a confirmed e-mail address.
          */
         post: operations["authorize"];
         delete?: never;

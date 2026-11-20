@@ -63,9 +63,22 @@ public class ApiClient {
 
     /** Signs up and signs in a new user; returns headers that authenticate as that user. */
     public HttpHeaders newSignedInUser() {
-        Map<String, String> credentials =
-                Map.of("email", "user-" + UUID.randomUUID() + "@example.com", "password", "correct horse battery");
+        return signUpAndSignIn("user-" + UUID.randomUUID() + "@example.com", null);
+    }
+
+    /** Like {@link #newSignedInUser()}, with the e-mail address confirmed through the link in the verification mail. */
+    public HttpHeaders newVerifiedUser(Mailbox mailbox) {
+        return signUpAndSignIn("user-" + UUID.randomUUID() + "@example.com", mailbox);
+    }
+
+    private HttpHeaders signUpAndSignIn(String email, Mailbox mailbox) {
+        Map<String, String> credentials = Map.of("email", email, "password", "correct horse battery");
         post("/api/v1/auth/sign-up", credentials);
+        if (mailbox != null) {
+            String token =
+                    mailbox.awaitMail(email, "Confirm your e-mail address").token();
+            post("/api/v1/auth/email-verification", Map.of("token", token));
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(
                 (String) post("/api/v1/auth/sign-in", credentials).getBody().get("accessToken"));

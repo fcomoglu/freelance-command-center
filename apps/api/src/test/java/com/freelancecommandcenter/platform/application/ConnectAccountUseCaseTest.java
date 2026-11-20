@@ -11,14 +11,18 @@ import com.freelancecommandcenter.platform.domain.OAuthTokens;
 import com.freelancecommandcenter.platform.domain.PlatformConnection;
 import com.freelancecommandcenter.shared.error.DomainException;
 import com.freelancecommandcenter.shared.error.ErrorKind;
+import com.freelancecommandcenter.shared.id.UserId;
 import com.freelancecommandcenter.shared.id.WorkspaceId;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
+import com.freelancecommandcenter.shared.security.AuthenticatedUser;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -26,18 +30,21 @@ class ConnectAccountUseCaseTest {
 
     private static final Instant NOW = Instant.parse("2026-11-20T10:00:00Z");
     private static final WorkspaceId WORKSPACE = new WorkspaceId(UUID.randomUUID());
+    private static final AuthenticatedUser CALLER = new AuthenticatedUser(new UserId(UUID.randomUUID()), WORKSPACE);
 
     private final InMemoryConnections connections = new InMemoryConnections();
     private final StubConnector connector = new StubConnector();
+    private final Set<UserId> verifiedUsers = new HashSet<>(Set.of(CALLER.userId()));
     private final ConnectAccountUseCase connecting = new ConnectAccountUseCase(
             new PlatformRegistry(List.of(), List.of(), List.of(connector), List.of(), List.of()),
             connections,
+            userId -> verifiedUsers.contains(userId),
             TestProperties.platform(),
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test
     void connectsTheAccountWhoseCodeComesBackWithTheState() {
-        String state = stateOf(connecting.start(WORKSPACE, PlatformCode.FREELANCER));
+        String state = stateOf(connecting.start(CALLER, PlatformCode.FREELANCER));
 
         PlatformConnection connection = connecting.complete(WORKSPACE, PlatformCode.FREELANCER, "code", state);
 
@@ -50,22 +57,16 @@ class ConnectAccountUseCaseTest {
     @Test
     void connectingAgainReplacesThePreviousConnection() {
         connecting.complete(
-                WORKSPACE,
-                PlatformCode.FREELANCER,
-                "code",
-                stateOf(connecting.start(WORKSPACE, PlatformCode.FREELANCER)));
+                WORKSPACE, PlatformCode.FREELANCER, "code", stateOf(connecting.start(CALLER, PlatformCode.FREELANCER)));
         PlatformConnection second = connecting.complete(
-                WORKSPACE,
-                PlatformCode.FREELANCER,
-                "code",
-                stateOf(connecting.start(WORKSPACE, PlatformCode.FREELANCER)));
+                WORKSPACE, PlatformCode.FREELANCER, "code", stateOf(connecting.start(CALLER, PlatformCode.FREELANCER)));
 
         assertThat(connections.findByWorkspace(WORKSPACE)).containsExactly(second);
     }
 
     @Test
     void aStateCompletesOneConnectionOfItsOwnWorkspaceOnly() {
-        String state = stateOf(connecting.start(WORKSPACE, PlatformCode.FREELANCER));
+        String state = stateOf(connecting.start(CALLER, PlatformCode.FREELANCER));
         WorkspaceId other = new WorkspaceId(UUID.randomUUID());
 
         assertCode(
@@ -85,7 +86,7 @@ class ConnectAccountUseCaseTest {
                         WORKSPACE,
                         PlatformCode.FREELANCER,
                         "code",
-                        stateOf(connecting.start(WORKSPACE, PlatformCode.FREELANCER))),
+                        stateOf(connecting.start(CALLER, PlatformCode.FREELANCER))),
                 "platform.connection_rejected");
 
         connector.failure = new PlatformUnavailableException(PlatformCode.FREELANCER, "down", null);
@@ -93,7 +94,7 @@ class ConnectAccountUseCaseTest {
                         WORKSPACE,
                         PlatformCode.FREELANCER,
                         "code",
-                        stateOf(connecting.start(WORKSPACE, PlatformCode.FREELANCER))))
+                        stateOf(connecting.start(CALLER, PlatformCode.FREELANCER))))
                 .isInstanceOfSatisfying(DomainException.class, exception -> {
                     assertThat(exception.code()).isEqualTo("platform.unavailable");
                     assertThat(exception.kind()).isEqualTo(ErrorKind.UNAVAILABLE);
@@ -102,8 +103,20 @@ class ConnectAccountUseCaseTest {
     }
 
     @Test
+    void onlyUsersWithAConfirmedEmailAddressStartConnecting() {
+        verifiedUsers.clear();
+
+        assertThatThrownBy(() -> connecting.start(CALLER, PlatformCode.FREELANCER))
+                .isInstanceOfSatisfying(DomainException.class, exception -> {
+                    assertThat(exception.code()).isEqualTo("platform.email_not_verified");
+                    assertThat(exception.kind()).isEqualTo(ErrorKind.FORBIDDEN);
+                });
+        assertThat(connections.attempts).isEmpty();
+    }
+
+    @Test
     void platformsWithoutAnOAuthAppCannotBeConnected() {
-        assertCode(() -> connecting.start(WORKSPACE, PlatformCode.UPWORK), "platform.connection_unavailable");
+        assertCode(() -> connecting.start(CALLER, PlatformCode.UPWORK), "platform.connection_unavailable");
     }
 
     private static String stateOf(URI authorizationUrl) {

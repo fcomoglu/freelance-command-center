@@ -1,6 +1,5 @@
 /**
- * Users, workspaces (the owner of all user data), authentication (JWT access and refresh tokens) and
- * registered devices.
+ * Users, workspaces (the owner of all user data) and authentication (JWT access and refresh tokens).
  */
 @org.springframework.modulith.ApplicationModule(displayName = "Identity")
 package com.freelancecommandcenter.identity;

@@ -128,7 +128,8 @@
       "connection_expired": "This connection attempt has expired. Start connecting again.",
       "connection_rejected": "The platform refused the connection. Start connecting again.",
       "connection_not_found": "This account is not connected.",
-      "unavailable": "The platform cannot be reached right now. Try again later."
+      "unavailable": "The platform cannot be reached right now. Try again later.",
+      "email_not_verified": "Confirm your e-mail address first with the link in the e-mail we sent you."
     }
   },
   "jobAlerts": {

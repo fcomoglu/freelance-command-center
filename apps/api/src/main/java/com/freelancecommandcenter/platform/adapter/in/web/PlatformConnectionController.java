@@ -52,13 +52,13 @@ class PlatformConnectionController {
 
     @Operation(
             summary = "Start connecting an account",
-            description = "Send the user to `authorizationUrl`. The platform returns them to the web client at"
-                    + " `/connections/{platform}/callback` with `code` and `state`, which complete the connection.",
+            description =
+                    "Send the user to `authorizationUrl`. The platform returns them to the web client at"
+                            + " `/connections/{platform}/callback` with `code` and `state`, which complete the connection. Requires a confirmed e-mail address.",
             security = @SecurityRequirement(name = "bearer"))
     @PostMapping("/api/v1/platform-connections/{platform}/authorizations")
     AuthorizationResponse authorize(AuthenticatedUser caller, @PathVariable PlatformCode platform) {
-        return new AuthorizationResponse(
-                connecting.start(caller.workspaceId(), platform).toString());
+        return new AuthorizationResponse(connecting.start(caller, platform).toString());
     }
 
     @Operation(

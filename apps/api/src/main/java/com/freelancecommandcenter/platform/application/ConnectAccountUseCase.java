@@ -1,5 +1,6 @@
 package com.freelancecommandcenter.platform.application;
 
+import com.freelancecommandcenter.identity.api.EmailVerification;
 import com.freelancecommandcenter.platform.application.port.out.AccountConnector;
 import com.freelancecommandcenter.platform.application.port.out.ConnectionRejectedException;
 import com.freelancecommandcenter.platform.application.port.out.PlatformConnectionRepository;
@@ -11,6 +12,7 @@ import com.freelancecommandcenter.shared.error.DomainException;
 import com.freelancecommandcenter.shared.error.ErrorKind;
 import com.freelancecommandcenter.shared.id.WorkspaceId;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
+import com.freelancecommandcenter.shared.security.AuthenticatedUser;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
@@ -21,7 +23,8 @@ import org.springframework.stereotype.Service;
 /**
  * Connects a platform account to a workspace with the OAuth 2 authorization code flow (ADR 0014): {@link #start}
  * returns the platform's consent page, the platform sends the user back to the web client, and {@link #complete}
- * redeems the code. Connecting again replaces the workspace's previous connection to the platform.
+ * redeems the code. Connecting again replaces the workspace's previous connection to the platform. Only users with a
+ * confirmed e-mail address can connect accounts.
  */
 @Service
 public class ConnectAccountUseCase {
@@ -30,16 +33,19 @@ public class ConnectAccountUseCase {
 
     private final PlatformRegistry platforms;
     private final PlatformConnectionRepository connections;
+    private final EmailVerification emailVerification;
     private final URI redirectBaseUrl;
     private final Clock clock;
 
     ConnectAccountUseCase(
             PlatformRegistry platforms,
             PlatformConnectionRepository connections,
+            EmailVerification emailVerification,
             PlatformProperties properties,
             Clock clock) {
         this.platforms = platforms;
         this.connections = connections;
+        this.emailVerification = emailVerification;
         this.redirectBaseUrl = properties.connections().redirectBaseUrl();
         this.clock = clock;
     }
@@ -50,9 +56,19 @@ public class ConnectAccountUseCase {
         return URI.create(base + "/connections/" + platform.value() + "/callback");
     }
 
-    /** @return the platform's consent page to send the user to */
-    public URI start(WorkspaceId workspaceId, PlatformCode platform) {
+    /**
+     * @return the platform's consent page to send the user to
+     * @throws DomainException {@code platform.email_not_verified} before the caller has confirmed their e-mail address
+     */
+    public URI start(AuthenticatedUser caller, PlatformCode platform) {
         AccountConnector connector = connector(platform);
+        if (!emailVerification.isVerified(caller.userId())) {
+            throw new DomainException(
+                    ErrorKind.FORBIDDEN,
+                    "platform.email_not_verified",
+                    "Connecting platform accounts requires a confirmed e-mail address");
+        }
+        WorkspaceId workspaceId = caller.workspaceId();
         Instant now = clock.instant();
         ConnectionAttempt attempt = ConnectionAttempt.start(workspaceId, platform, now);
         connections.saveAttempt(attempt, now.minus(ConnectionAttempt.LIFETIME));

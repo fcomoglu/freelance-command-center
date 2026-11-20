@@ -128,7 +128,8 @@
       "connection_expired": "Bu bağlantı denemesinin süresi doldu. Bağlamaya yeniden başla.",
       "connection_rejected": "Platform bağlantıyı reddetti. Bağlamaya yeniden başla.",
       "connection_not_found": "Bu hesap bağlı değil.",
-      "unavailable": "Platforma şu anda ulaşılamıyor. Daha sonra tekrar dene."
+      "unavailable": "Platforma şu anda ulaşılamıyor. Daha sonra tekrar dene.",
+      "email_not_verified": "Önce sana gönderdiğimiz e-postadaki bağlantıyla e-posta adresini doğrula."
     }
   },
   "jobAlerts": {
