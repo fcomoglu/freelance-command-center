@@ -1,7 +1,7 @@
 # Freelance Command Center
 
-AI-assisted workspace for freelancers: discover jobs across freelance platforms, score them against your profile,
-draft proposals with AI and track every bid — from the web, your phone or your browser.
+One inbox for your freelance work: new jobs, messages and notifications from every platform you use, on the web, on
+your phone and in your browser. AI job scoring and proposal drafts come next.
 
 > Status: early development — the project skeleton is in place; features are being built.
 
@@ -10,10 +10,11 @@ draft proposals with AI and track every bid — from the web, your phone or your
 | Feature | Status |
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
-| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session) | planned |
-| **AI fit score** for every job, based on your skills, experience and rates — with the reasons behind the score | planned |
+| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session), with push notifications for new jobs | planned |
+| **Unified messages:** conversations from every platform in one list, with unread state and push notifications | planned |
+| **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
+| **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
 | **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |
-| **Bid tracking** and notifications on web and mobile | planned |
 | **Multi-language UI** (English, Turkish) | in progress |
 
 ## Tech stack

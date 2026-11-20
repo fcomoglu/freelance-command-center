@@ -1,6 +1,6 @@
 /**
- * The freelancer's professional profile: skills, experience, rates and languages. It is the single
- * source of truth used for job matching and proposal drafting.
+ * The freelancer's professional profile, imported read-only from the connected platform accounts. It is the input of
+ * AI job scoring and proposal drafting.
  */
 @org.springframework.modulith.ApplicationModule(displayName = "Profile")
 package com.freelancecommandcenter.profile;

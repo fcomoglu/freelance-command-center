@@ -4,8 +4,9 @@ The system design as currently agreed. Implementation status is tracked in the [
 
 ## Goals
 
-- One place to discover, evaluate and respond to freelance jobs across several platforms.
-- AI assistance (job-to-profile scoring, proposal drafting, price suggestions) with predictable cost.
+- One inbox for freelance work across several platforms: new jobs, messages and platform notifications, with push
+  notifications on the phone ([ADR 0011](adr/0011-product-focus-one-inbox.md)).
+- AI assistance (job scoring, proposal drafting, price suggestions) with predictable cost (planned).
 - Web, mobile and browser-extension clients on top of one backend.
 - A codebase that demonstrates production-grade practices: clear module boundaries, tests, CI, documentation.
 
@@ -37,14 +38,14 @@ flowchart LR
 
 | Platform | Integration | Notes |
 |---|---|---|
-| Freelancer.com | Official REST API (OAuth 2) | Server-side polling of new projects, bid submission through the API. |
-| Upwork | Official GraphQL API (OAuth 2) | Requires an approved API key. |
+| Freelancer.com | Official REST API (OAuth 2) | Server-side polling of new projects, messages and bid status; bid submission through the API. |
+| Upwork | Official GraphQL API (OAuth 2) | Jobs, messages and proposal status. Requires an approved API key. |
 | Fiverr, Bionluk, Arc.dev | Browser extension | Reads pages the user opens/allows inside their own session and sends structured data to the API. Never submits on its own: it pre-fills forms and the user clicks submit. |
 
 Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-style-and-platform-patterns.md)):
 
-- **Capability ports (interface segregation):** `JobSource`, `ProposalSubmitter`, `ProposalStatusTracker`,
-  `AccountConnector`. Each platform adapter implements only the capabilities the platform supports.
+- **Capability ports (interface segregation):** `JobSource`, `MessageSource`, `NotificationSource`,
+  `ProposalSubmitter`, `ProposalStatusTracker`, `AccountConnector`. Each platform adapter implements only the capabilities the platform supports.
 - **Strategy + registry:** every adapter is a strategy for its ports; `PlatformRegistry` selects it by
   `PlatformCode` and answers which capabilities a platform has. Adding a platform means adding an adapter.
 - **Anti-corruption layer:** a translator per platform maps platform data to the canonical `JobListing` model. The raw
@@ -62,13 +63,14 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 | Module | Responsibility |
 |---|---|
 | `identity` | Users, workspaces, authentication (JWT access + refresh tokens), devices. |
-| `profile` | The freelancer's professional profile: skills, experience, rates, languages — the single source of truth used for matching and proposals. |
+| `profile` | The freelancer's professional profile, imported read-only from the connected platform accounts; input of AI scoring and proposals (planned). |
 | `platform` | Platform connections (OAuth tokens, extension pairing), per-platform adapters, sync scheduling. The only module that knows platform specifics. |
 | `job` | The job catalog: normalized listings, de-duplication, visibility. Holds no per-user data. |
+| `messaging` | Conversations and messages from the connected platforms, per workspace, with unread state. |
 | `matching` | Per-workspace job filters, rule-based pre-filtering and fit scores; re-scores when the profile or filters change. |
 | `proposal` | Proposal drafts, approval workflow, submission and outcome tracking (submitted → viewed → shortlisted → won / lost). |
 | `ai` | Claude integration: scoring, drafting, pricing. Prompt templates, caching strategy, usage/cost tracking per workspace. |
-| `notification` | Push (mobile), email and in-app notifications. |
+| `notification` | The notification feed (new jobs, messages, bid status, platform notices) and its delivery: push (mobile), e-mail and in-app. |
 | `shared` | Cross-cutting kernel: IDs (including `WorkspaceId`), money, time, error model. Kept deliberately small. |
 
 Each module follows the hexagonal layout described in `CLAUDE.md` (`domain` / `application` / `adapter`).
@@ -84,7 +86,7 @@ platform.
   - Jobs from official APIs are **public**: fetched once into a shared catalog and visible to every workspace.
   - Jobs captured by the browser extension are **private** to the workspace that captured them; data read in one
     user's session is never shown to another user.
-- Scores, filters, proposals and AI usage are always per workspace.
+- Messages, notifications, scores, filters, proposals and AI usage are always per workspace.
 
 ## Authentication
 
