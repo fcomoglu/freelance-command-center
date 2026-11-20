@@ -45,6 +45,13 @@ export function AppLayout() {
           {t('nav.messages')}
         </Link>
         <Link
+          to="/notifications"
+          className="text-gray-600 hover:underline dark:text-gray-400"
+          activeProps={{ className: 'font-semibold text-gray-900 dark:text-gray-100' }}
+        >
+          {t('nav.notifications')}
+        </Link>
+        <Link
           to="/job-alerts"
           className="text-gray-600 hover:underline dark:text-gray-400"
           activeProps={{ className: 'font-semibold text-gray-900 dark:text-gray-100' }}

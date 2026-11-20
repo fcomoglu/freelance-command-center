@@ -9,7 +9,8 @@
     "settings": "Settings",
     "jobAlerts": "Job alerts",
     "platformMail": "Platform e-mails",
-    "accounts": "Accounts"
+    "accounts": "Accounts",
+    "notifications": "Notifications"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -151,6 +152,23 @@
     "pushUnsupported": "This app cannot receive notifications here: they need the installed app on a real phone, not Expo Go."
   },
   "notifications": {
+    "title": "Notifications",
+    "intro": "Decisions on your Freelancer.com bids come from your connected account. Everything else your platforms e-mail you appears as a notice with the subject and the start of the e-mail.",
+    "empty": "No notifications yet. They appear here as your platforms send them.",
+    "loadMore": "Show more",
+    "markAllRead": "Mark all as read",
+    "new": "New",
+    "openOn": "Open on {{platform}}",
+    "noSubject": "(no subject)",
+    "kind": {
+      "proposal_shortlisted": "Your proposal was shortlisted",
+      "proposal_awarded": "Your proposal was awarded",
+      "proposal_rejected": "Your proposal was rejected",
+      "proposal_revoked": "The award was revoked",
+      "notice": "Notice"
+    },
+    "feedChannel": "Platform notifications",
+    "mobileHint": "Tap a notification to open it on its platform.",
     "jobsChannel": "New jobs",
     "messagesChannel": "New messages"
   },
@@ -173,7 +191,7 @@
     "loadMore": "Show more",
     "status": {
       "processed": "Read",
-      "unrecognized": "Not readable yet",
+      "unrecognized": "Shown as a notice",
       "unknown_sender": "Not from a platform"
     }
   },

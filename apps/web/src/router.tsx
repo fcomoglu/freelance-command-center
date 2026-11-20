@@ -12,6 +12,7 @@ import { ForgotPasswordPage } from './pages/forgot-password';
 import { JobAlertsPage } from './pages/job-alerts';
 import { JobsPage } from './pages/jobs';
 import { MessagesPage } from './pages/messages';
+import { NotificationsPage } from './pages/notifications';
 import { PlatformMailPage } from './pages/platform-mail';
 import { ResetPasswordPage } from './pages/reset-password';
 import { SignInPage } from './pages/sign-in';
@@ -116,6 +117,12 @@ const messagesRoute = createRoute({
   },
 });
 
+const notificationsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications',
+  component: NotificationsPage,
+});
+
 const platformMailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/platform-mail',
@@ -162,6 +169,7 @@ const routeTree = rootRoute.addChildren([
   appLayoutRoute.addChildren([
     jobsRoute,
     messagesRoute,
+    notificationsRoute,
     jobAlertsRoute,
     platformMailRoute,
     accountsRoute,

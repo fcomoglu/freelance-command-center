@@ -9,7 +9,8 @@
     "settings": "Ayarlar",
     "jobAlerts": "İlan bildirimleri",
     "platformMail": "Platform e-postaları",
-    "accounts": "Hesaplar"
+    "accounts": "Hesaplar",
+    "notifications": "Bildirimler"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -151,6 +152,23 @@
     "pushUnsupported": "Bildirimler burada çalışmaz: Expo Go değil, gerçek telefonda kurulu uygulama gerekir."
   },
   "notifications": {
+    "title": "Bildirimler",
+    "intro": "Freelancer.com tekliflerindeki kararlar bağlı hesabından gelir. Platformlarının sana e-postayla bildirdiği diğer her şey, konusu ve metninin başıyla bildirim olarak görünür.",
+    "empty": "Henüz bildirim yok. Platformların gönderdikçe burada görünür.",
+    "loadMore": "Daha fazla göster",
+    "markAllRead": "Tümünü okundu say",
+    "new": "Yeni",
+    "openOn": "{{platform}} üzerinde aç",
+    "noSubject": "(konu yok)",
+    "kind": {
+      "proposal_shortlisted": "Teklifin kısa listeye alındı",
+      "proposal_awarded": "Teklifin kabul edildi",
+      "proposal_rejected": "Teklifin reddedildi",
+      "proposal_revoked": "İş geri alındı",
+      "notice": "Bildirim"
+    },
+    "feedChannel": "Platform bildirimleri",
+    "mobileHint": "Platformda açmak için bildirime dokun.",
     "jobsChannel": "Yeni ilanlar",
     "messagesChannel": "Yeni mesajlar"
   },
@@ -173,7 +191,7 @@
     "loadMore": "Daha fazla göster",
     "status": {
       "processed": "Okundu",
-      "unrecognized": "Henüz okunamıyor",
+      "unrecognized": "Bildirim olarak gösterildi",
       "unknown_sender": "Platformdan değil"
     }
   },
