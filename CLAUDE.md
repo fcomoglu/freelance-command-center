@@ -105,8 +105,15 @@ Other notes:
   Tests: Vitest (web, extension) and Jest (mobile, Expo default) (planned).
 - Server state with TanStack Query; API calls only through `packages/api-client` (`createApiClient`). Never edit
   `openapi.json` or `src/schema.d.ts` by hand.
+- Sessions: `createApiClient` also returns a `session` that keeps the access token in memory, refreshes it before it
+  expires (one refresh at a time) and ends the session on a rejected token. Screens never handle tokens themselves.
+- API errors: show `t(errorKey(problem.code))` from `@fcc/i18n`; every error code the API can return has a key under
+  `errors.` in all locales.
 - i18n with i18next / react-i18next; resources from `packages/i18n`. Language detection: user setting → device/browser
   language → `en`.
+- Web: TanStack Router with code-based routes and guards in `src/router.tsx`; screens in `src/pages/` export only
+  components (fast refresh). Tailwind CSS v4; shared primitives in `src/components/ui.tsx`. Vite proxies `/api` to
+  the local API, so the web app and the API share one origin and the refresh token stays in its HttpOnly cookie.
 - Mobile: Expo + Expo Router; secure token storage with `expo-secure-store`.
 
 ## Conventions

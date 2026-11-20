@@ -16,5 +16,73 @@
   "language": {
     "en": "İngilizce",
     "tr": "Türkçe"
+  },
+  "auth": {
+    "fields": {
+      "email": "E-posta",
+      "password": "Şifre",
+      "newPassword": "Yeni şifre",
+      "passwordHint": "En az 10 karakter."
+    },
+    "signIn": {
+      "title": "Giriş yap",
+      "submit": "Giriş yap",
+      "noAccount": "Hesabın yok mu?",
+      "createAccount": "Hesap oluştur",
+      "forgotPassword": "Şifreni mi unuttun?"
+    },
+    "signUp": {
+      "title": "Hesabını oluştur",
+      "submit": "Hesap oluştur",
+      "haveAccount": "Zaten hesabın var mı?",
+      "signIn": "Giriş yap",
+      "checkEmailTitle": "Gelen kutunu kontrol et",
+      "checkEmail": "{{email}} adresine bir doğrulama bağlantısı gönderdik. Adresini doğrulamak için bağlantıyı aç, sonra giriş yap."
+    },
+    "verifyEmail": {
+      "title": "E-posta adresini doğrula",
+      "verifying": "E-posta adresin doğrulanıyor…",
+      "success": "E-posta adresin doğrulandı.",
+      "continue": "Devam et"
+    },
+    "forgotPassword": {
+      "title": "Şifreni sıfırla",
+      "intro": "E-posta adresini gir, yeni şifre belirlemen için bir bağlantı gönderelim.",
+      "submit": "Bağlantı gönder",
+      "sent": "{{email}} adresiyle bir hesap varsa sıfırlama bağlantısı yolda. Bağlantı 1 saat geçerlidir."
+    },
+    "resetPassword": {
+      "title": "Yeni şifre belirle",
+      "submit": "Şifreyi kaydet",
+      "success": "Şifren değiştirildi ve tüm cihazlarda oturumun kapatıldı.",
+      "missingToken": "Bu bağlantı eksik. Yeni bir bağlantı iste."
+    },
+    "backToSignIn": "Girişe dön"
+  },
+  "account": {
+    "signedInAs": "{{email}} olarak giriş yapıldı",
+    "signOut": "Çıkış yap",
+    "unverified": "E-posta adresin henüz doğrulanmadı. Platform bağlamak için doğrulanmış adres gerekir.",
+    "resend": "Yeni bağlantı gönder",
+    "resent": "Yeni bir doğrulama bağlantısı gönderildi."
+  },
+  "errors": {
+    "identity": {
+      "invalid_credentials": "E-posta veya şifre hatalı.",
+      "invalid_token": "Bu bağlantı geçersiz veya süresi dolmuş.",
+      "weak_password": "Şifre 10 ile 128 karakter arasında olmalı.",
+      "invalid_email": "Geçerli bir e-posta adresi gir.",
+      "too_many_attempts": "Çok fazla deneme yapıldı. Lütfen daha sonra tekrar dene.",
+      "unauthenticated": "Oturumun sona erdi. Lütfen tekrar giriş yap."
+    },
+    "validation": {
+      "failed": "Lütfen işaretli alanları kontrol et.",
+      "not_blank": "Bu alan zorunlu.",
+      "size": "Bu değer çok uzun."
+    },
+    "network": {
+      "unreachable": "Sunucuya ulaşılamıyor. Bağlantını kontrol edip tekrar dene."
+    },
+    "unknown": "Bir şeyler ters gitti. Lütfen tekrar dene."
   }
 }
