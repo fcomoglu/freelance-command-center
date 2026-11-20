@@ -16,6 +16,11 @@ class TestSupportConfiguration {
     }
 
     @Bean
+    FakeJobSource fakeJobSource() {
+        return new FakeJobSource();
+    }
+
+    @Bean
     Mailbox mailbox(MailpitContainer mailpit) {
         return new Mailbox(mailpit.apiUrl());
     }

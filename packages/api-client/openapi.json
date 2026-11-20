@@ -218,6 +218,57 @@
         "tags" : [ "Authentication" ]
       }
     },
+    "/api/v1/jobs" : {
+      "get" : {
+        "operationId" : "jobs",
+        "parameters" : [ {
+          "description" : "Only jobs of this platform",
+          "in" : "query",
+          "name" : "platform",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          }
+        }, {
+          "description" : "`nextCursor` of the previous page",
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limit",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseJob"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The job feed, newest posting first",
+        "tags" : [ "Jobs" ]
+      }
+    },
     "/api/v1/me" : {
       "get" : {
         "operationId" : "me",
@@ -259,6 +310,68 @@
   },
   "components" : {
     "schemas" : {
+      "Job" : {
+        "type" : "object",
+        "properties" : {
+          "bidCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "budget" : {
+            "$ref" : "#/components/schemas/JobBudget"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Plain text; empty when the platform gives none"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "ISO 639-1 code of the listing's language"
+          },
+          "platform" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          },
+          "postedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "skills" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The listing on its platform"
+          }
+        },
+        "required" : [ "description", "id", "platform", "postedAt", "skills", "title", "url" ]
+      },
+      "JobBudget" : {
+        "type" : "object",
+        "properties" : {
+          "maximum" : {
+            "$ref" : "#/components/schemas/Money",
+            "description" : "Absent for a single amount"
+          },
+          "minimum" : {
+            "$ref" : "#/components/schemas/Money"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "fixed", "hourly" ]
+          }
+        },
+        "required" : [ "minimum", "type" ]
+      },
       "MeResponse" : {
         "type" : "object",
         "properties" : {
@@ -279,6 +392,37 @@
           }
         },
         "required" : [ "email", "emailVerified", "language", "userId", "workspaceId" ]
+      },
+      "Money" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string",
+            "example" : "1250.00",
+            "pattern" : "^\\d{1,15}(\\.\\d{1,4})?$"
+          },
+          "currency" : {
+            "type" : "string",
+            "example" : "USD",
+            "pattern" : "^[A-Z]{3}$"
+          }
+        },
+        "required" : [ "amount", "currency" ]
+      },
+      "PageResponseJob" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Job"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "items" ]
       },
       "PasswordResetConfirmation" : {
         "type" : "object",

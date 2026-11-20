@@ -10,7 +10,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | Feature | Status |
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
-| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session), with push notifications for new jobs | planned |
+| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session), with push notifications for new jobs | in progress (Freelancer.com sync and feed API) |
 | **Unified messages:** conversations from every platform in one list, with unread state and push notifications | planned |
 | **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
@@ -39,6 +39,10 @@ cd apps/api && ./mvnw spring-boot:run # API on http://localhost:8080 (starts Pos
 npm run web:dev                       # web app on http://localhost:5173; e-mails arrive in Mailpit, http://localhost:8025
 npm run mobile:start                  # mobile app (Expo)
 ```
+
+The Freelancer.com job sync needs an access token: generate a personal access token at
+https://accounts.freelancer.com/settings/develop and put it into `apps/api/.env` as `FREELANCER_ACCESS_TOKEN` (see
+`apps/api/.env.example`). Without it the API runs without that platform.
 
 The mobile app calls `http://localhost:8080` (Android emulator: `http://10.0.2.2:8080`). On a physical device, set
 `EXPO_PUBLIC_API_URL` to your computer's LAN address, e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.20:8080`.

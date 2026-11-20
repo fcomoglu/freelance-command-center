@@ -1,6 +1,6 @@
 /**
- * Shared kernel used by every module: identifiers, money, time and the error model. Kept deliberately
- * small.
+ * Shared kernel used by every module: identifiers, platform codes, money, pagination and the error model. Kept
+ * deliberately small.
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Shared kernel",

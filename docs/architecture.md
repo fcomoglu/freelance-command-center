@@ -38,7 +38,7 @@ flowchart LR
 
 | Platform | Integration | Notes |
 |---|---|---|
-| Freelancer.com | Official REST API (OAuth 2) | Server-side polling of new projects, messages and bid status; bid submission through the API. |
+| Freelancer.com | Official REST API | Server-side job sync with one configured access token; messages and bid status through each user's OAuth 2 connection; bid submission through the API. |
 | Upwork | Official GraphQL API (OAuth 2) | Jobs, messages and proposal status. Requires an approved API key. |
 | Fiverr, Bionluk, Arc.dev | Browser extension | Reads pages the user opens/allows inside their own session and sends structured data to the API. Never submits on its own: it pre-fills forms and the user clicks submit. |
 
@@ -58,6 +58,22 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 - **Extension extractors:** the extension parses pages in the browser with one extractor (strategy) per site and sends
   a versioned JSON schema; page HTML never reaches the server. A site redesign is fixed by an extension release.
 
+### Job sync
+
+Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, every 5 minutes by default,
+`fcc.platform.job-sync.*`):
+
+- The jobs read this way are public and shared by all workspaces
+  ([ADR 0007](adr/0007-module-boundaries-and-data-ownership.md)), so one access token from the server configuration is
+  enough (`FREELANCER_ACCESS_TOKEN`). A platform without a configured token is not registered.
+- A per-platform **high-watermark** (the newest listing update seen) limits each request to listings updated since the
+  last run. A run reads a bounded number of pages, oldest update first, so a backlog is worked off over several runs
+  within the platform's rate limits. A failed run keeps the watermark, and the next run reads the same period again.
+- Each run stores the raw payloads and one `JobDiscovered` event per listing in one transaction (outbox); the
+  platform call itself happens outside the transaction.
+- `job` turns each event into a catalog job, unique per platform listing. Only a newer platform update changes a
+  job, so repeated events are harmless; a new job publishes `JobPublished`.
+
 ## Backend modules
 
 | Module | Responsibility |
@@ -71,7 +87,7 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 | `proposal` | Proposal drafts, approval workflow, submission and outcome tracking (submitted → viewed → shortlisted → won / lost). |
 | `ai` | Claude integration: scoring, drafting, pricing. Prompt templates, caching strategy, usage/cost tracking per workspace. |
 | `notification` | The notification feed (new jobs, messages, bid status, platform notices) and its delivery: push (mobile), e-mail and in-app. |
-| `shared` | Cross-cutting kernel: IDs (including `WorkspaceId`), money, time, error model. Kept deliberately small. |
+| `shared` | Cross-cutting kernel: IDs (including `WorkspaceId`), platform codes, money, pagination, error model. Kept deliberately small. |
 
 Each module follows the hexagonal layout described in `CLAUDE.md` (`domain` / `application` / `adapter`).
 

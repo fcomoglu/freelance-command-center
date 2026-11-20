@@ -2,6 +2,7 @@ package com.freelancecommandcenter.shared.web;
 
 import com.freelancecommandcenter.shared.error.DomainException;
 import com.freelancecommandcenter.shared.error.ErrorKind;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
@@ -64,6 +66,26 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(exception, problem, headers, status, request);
     }
 
+    /** Constraint violations on query and path parameters, reported in the same shape as body validation errors. */
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(
+            HandlerMethodValidationException exception,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Request validation failed");
+        problem.setProperty("code", "validation.failed");
+        problem.setProperty(
+                "errors",
+                exception.getParameterValidationResults().stream()
+                        .flatMap(result -> result.getResolvableErrors().stream()
+                                .map(error -> new FieldErrorItem(
+                                        result.getMethodParameter().getParameterName(),
+                                        validationCode(constraintName(error.getCodes())))))
+                        .toList());
+        return handleExceptionInternal(exception, problem, headers, HttpStatus.BAD_REQUEST, request);
+    }
+
     /** Adds a generic code to the Problem Details Spring creates for framework errors (malformed JSON, 404, ...). */
     @Override
     protected ResponseEntity<Object> createResponseEntity(
@@ -80,6 +102,11 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
 
     private static String validationCode(String constraint) {
         return "validation." + snakeCase(constraint == null ? "invalid" : constraint);
+    }
+
+    /** The least specific message code is the constraint name ({@code Max}). */
+    private static String constraintName(String[] codes) {
+        return codes == null || codes.length == 0 ? null : List.of(codes).getLast();
     }
 
     /** {@code NotBlank} becomes {@code not_blank}; {@code BAD_REQUEST} becomes {@code bad_request}. */

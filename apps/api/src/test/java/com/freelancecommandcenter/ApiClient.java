@@ -2,6 +2,7 @@ package com.freelancecommandcenter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,6 +38,17 @@ public class ApiClient {
 
     public ResponseEntity<Map<String, Object>> get(String path, HttpHeaders headers) {
         return send(client.get().uri(path).headers(h -> h.addAll(headers)));
+    }
+
+    /** Signs up and signs in a new user; returns headers that authenticate as that user. */
+    public HttpHeaders newSignedInUser() {
+        Map<String, String> credentials =
+                Map.of("email", "user-" + UUID.randomUUID() + "@example.com", "password", "correct horse battery");
+        post("/api/v1/auth/sign-up", credentials);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(
+                (String) post("/api/v1/auth/sign-in", credentials).getBody().get("accessToken"));
+        return headers;
     }
 
     private static ResponseEntity<Map<String, Object>> send(RestClient.RequestHeadersSpec<?> request) {

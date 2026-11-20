@@ -1,0 +1,46 @@
+{
+  "status": "success",
+  "request_id": "3f1c9a0e5b2d4c7e8f9a0b1c2d3e4f50",
+  "result": {
+    "total_count": 3,
+    "projects": [
+      {
+        "id": 39001001,
+        "owner_id": 5001,
+        "title": "  Spring Boot REST API for a booking app ",
+        "status": "active",
+        "seo_url": "java/Spring-Boot-REST-API-booking",
+        "currency": {"id": 1, "code": "USD", "sign": "$", "name": "US Dollar", "exchange_rate": 1, "country": "US"},
+        "description": "We need a REST API with Spring Boot and PostgreSQL.",
+        "preview_description": "We need a REST API with Spring Boot...",
+        "jobs": [
+          {"id": 7, "name": "Java", "category": {"id": 1, "name": "Websites, IT & Software"}},
+          {"id": 1092, "name": "Spring Boot", "category": {"id": 1, "name": "Websites, IT & Software"}}
+        ],
+        "type": "fixed",
+        "budget": {"minimum": 250.0, "maximum": 750.0, "currency_id": 1},
+        "bid_stats": {"bid_count": 12, "bid_avg": 480.5},
+        "time_submitted": 1795167000,
+        "time_updated": 1795167300,
+        "language": "en",
+        "frontend_project_status": "open"
+      },
+      {
+        "id": 39001002,
+        "title": "Proje yönetim paneli",
+        "seo_url": "php/Proje-yonetim-paneli",
+        "currency": {"id": 12, "code": "TRY", "sign": "₺", "name": "Turkish Lira"},
+        "preview_description": "Laravel ile yönetim paneli",
+        "type": "hourly",
+        "budget": {"minimum": 300, "currency_id": 12},
+        "time_submitted": 1795167100,
+        "language": "tr"
+      },
+      {
+        "id": 39001003,
+        "seo_url": "misc/untitled",
+        "time_submitted": 1795167200
+      }
+    ]
+  }
+}

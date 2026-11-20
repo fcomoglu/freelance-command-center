@@ -1,6 +1,9 @@
 spring:
   application:
     name: fcc-api
+  config:
+    # Local secrets such as FREELANCER_ACCESS_TOKEN (see .env.example); environment variables work as well.
+    import: optional:file:.env[.properties]
   docker:
     compose:
       # Shared local infrastructure; the API is started from apps/api.
@@ -58,3 +61,6 @@ fcc:
     web-origins:
       - http://localhost:5173
     mail-from: no-reply@freelancecommandcenter.com
+  platform:
+    freelancer:
+      access-token: ${FREELANCER_ACCESS_TOKEN:}
