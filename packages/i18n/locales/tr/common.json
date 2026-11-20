@@ -1,14 +1,32 @@
 {
   "app": {
     "name": "Freelance Command Center",
-    "tagline": "Platformlardaki freelance işleri bul, puanla ve kazan."
+    "tagline": "Tüm freelance platformlarındaki ilanlar, mesajlar ve bildirimler tek yerde."
   },
   "nav": {
     "jobs": "İlanlar",
-    "proposals": "Teklifler",
-    "platforms": "Platformlar",
-    "profile": "Profil",
     "settings": "Ayarlar"
+  },
+  "platforms": {
+    "freelancer": "Freelancer.com",
+    "upwork": "Upwork",
+    "fiverr": "Fiverr",
+    "bionluk": "Bionluk",
+    "arc_dev": "Arc.dev"
+  },
+  "jobs": {
+    "title": "İlanlar",
+    "platformFilter": "Platform",
+    "allPlatforms": "Tüm platformlar",
+    "empty": "Henüz ilan yok. Platformlarındaki yeni ilanlar birkaç dakika içinde burada görünür.",
+    "loadMore": "Daha fazla göster",
+    "openOn": "{{platform}} üzerinde aç",
+    "bids_one": "{{count}} teklif",
+    "bids_other": "{{count}} teklif",
+    "budget": {
+      "hourly": "{{amount}}/saat",
+      "range": "{{minimum}} – {{maximum}}"
+    }
   },
   "settings": {
     "language": "Dil"
@@ -78,10 +96,15 @@
     "validation": {
       "failed": "Lütfen işaretli alanları kontrol et.",
       "not_blank": "Bu alan zorunlu.",
-      "size": "Bu değer çok uzun."
+      "size": "Bu değer çok uzun.",
+      "max": "Bu değer çok büyük.",
+      "min": "Bu değer çok küçük."
     },
     "network": {
       "unreachable": "Sunucuya ulaşılamıyor. Bağlantını kontrol edip tekrar dene."
+    },
+    "pagination": {
+      "invalid_cursor": "Bu liste değişti. Sayfayı yenile."
     },
     "unknown": "Bir şeyler ters gitti. Lütfen tekrar dene."
   }

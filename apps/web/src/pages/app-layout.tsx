@@ -1,14 +1,12 @@
 import { unwrap } from '@fcc/api-client';
 import { useMutation } from '@tanstack/react-query';
-import { Outlet } from '@tanstack/react-router';
+import { Link, Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { api } from '../api';
 import { LanguageSelect } from '../components/language-select';
 import { Alert, Button } from '../components/ui';
 import { describeError } from '../problem';
-
-const navigationKeys = ['jobs', 'proposals', 'platforms', 'profile', 'settings'] as const;
 
 export function AppLayout() {
   const { t } = useTranslation();
@@ -32,11 +30,13 @@ export function AppLayout() {
         </div>
       </header>
       <nav className="flex gap-4 border-b border-gray-200 px-6 py-2 text-sm dark:border-gray-800">
-        {navigationKeys.map((key) => (
-          <a key={key} href={`#${key}`} className="text-blue-600 hover:underline dark:text-blue-400">
-            {t(`nav.${key}`)}
-          </a>
-        ))}
+        <Link
+          to="/"
+          className="text-gray-600 hover:underline dark:text-gray-400"
+          activeProps={{ className: 'font-semibold text-gray-900 dark:text-gray-100' }}
+        >
+          {t('nav.jobs')}
+        </Link>
       </nav>
       {me.data && !me.data.emailVerified && <VerifyEmailBanner />}
       <main className="px-6 py-8">

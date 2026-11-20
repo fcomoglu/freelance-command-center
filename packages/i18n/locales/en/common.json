@@ -1,14 +1,32 @@
 {
   "app": {
     "name": "Freelance Command Center",
-    "tagline": "Find, score and win freelance jobs across platforms."
+    "tagline": "Jobs, messages and notifications from all your freelance platforms in one place."
   },
   "nav": {
     "jobs": "Jobs",
-    "proposals": "Proposals",
-    "platforms": "Platforms",
-    "profile": "Profile",
     "settings": "Settings"
+  },
+  "platforms": {
+    "freelancer": "Freelancer.com",
+    "upwork": "Upwork",
+    "fiverr": "Fiverr",
+    "bionluk": "Bionluk",
+    "arc_dev": "Arc.dev"
+  },
+  "jobs": {
+    "title": "Jobs",
+    "platformFilter": "Platform",
+    "allPlatforms": "All platforms",
+    "empty": "No jobs yet. New jobs from your platforms appear here within a few minutes.",
+    "loadMore": "Show more",
+    "openOn": "Open on {{platform}}",
+    "bids_one": "{{count}} bid",
+    "bids_other": "{{count}} bids",
+    "budget": {
+      "hourly": "{{amount}}/hr",
+      "range": "{{minimum}} – {{maximum}}"
+    }
   },
   "settings": {
     "language": "Language"
@@ -78,10 +96,15 @@
     "validation": {
       "failed": "Please check the highlighted fields.",
       "not_blank": "This field is required.",
-      "size": "This value is too long."
+      "size": "This value is too long.",
+      "max": "This value is too large.",
+      "min": "This value is too small."
     },
     "network": {
       "unreachable": "The server cannot be reached. Check your connection and try again."
+    },
+    "pagination": {
+      "invalid_cursor": "This list has changed. Reload the page."
     },
     "unknown": "Something went wrong. Please try again."
   }
