@@ -231,8 +231,8 @@ Owned by the `identity` module; details and reasons in [ADR 0008](adr/0008-authe
   an e-mail address cannot sign in until the window ends; password reset requests are limited to 3 per address and
   hour, verification e-mail resends to 3 per user and hour. Unknown addresses are counted too, so a refusal reveals
   nothing. All `POST /api/v1/auth/**` requests are limited per client IP address
-  (`fcc.identity.auth-requests-per-ip-per-minute`, default 20); behind a reverse proxy
-  `server.forward-headers-strategy` must be set so the client address is used.
+  (`fcc.identity.auth-requests-per-ip-per-minute`, default 20). Behind a reverse proxy the client address comes from
+  the `X-Forwarded-For` header of a proxy on a private network (`server.forward-headers-strategy: native`).
 - Outgoing e-mail goes through the `IdentityMailer` port; locally it is caught by Mailpit. Sign-in with Google (planned)
   attaches to the same user via the e-mail address.
 
@@ -301,6 +301,19 @@ sequenceDiagram
 - The API is language-neutral: it returns stable error codes; clients translate them. Server-generated text that
   reaches users (e.g. notification emails) uses Spring `MessageSource` with the user's preferred locale.
 - AI-generated proposals are written in the language of the job post unless the user overrides it.
+
+## Deployment
+
+The application ships as two container images, independent of the hosting provider (planned):
+
+- **API** (`apps/api/Dockerfile`): the Spring Boot jar, extracted into layers, on a Java 25 JRE, running as a non-root
+  user. It needs PostgreSQL 18, Redis 8 and an SMTP server, and is configured only through environment variables (the
+  production settings are listed in `apps/api/.env.example`). Flyway migrates the database on start.
+- **Web** (`apps/web/Dockerfile`): nginx serves the built app and forwards `/api` to the API (`API_URL`), so the web
+  app and the API share one origin, as with the Vite proxy in development: no CORS, and the `SameSite=Strict` refresh
+  cookie works. Built assets are cached for a year (their names carry a content hash), `index.html` is revalidated.
+
+`infra/compose.app.yaml` runs both images on the local infrastructure. CI builds both images on every change.
 
 ## Quality gates
 

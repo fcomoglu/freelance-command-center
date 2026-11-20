@@ -180,8 +180,10 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Update the committed spec (`packages/api-client/openapi.json`) | `cd apps/api && ./mvnw verify` |
 | Lint / type-check / format all clients | `npm run lint` / `npm run typecheck` / `npm run format` |
 | Infrastructure only | `docker compose -f infra/compose.yaml up -d` |
+| Build the container images | `docker build -t fcc-api apps/api` / `docker build -f apps/web/Dockerfile -t fcc-web .` |
+| Run the images locally (http://localhost:8081) | `docker compose -f infra/compose.yaml -f infra/compose.app.yaml up --build` |
 | Local e-mail inbox (Mailpit) | `http://localhost:8025` |
 | Deliver a forwarded platform e-mail locally (`INBOUND_MAIL_SECRET` set in `apps/api/.env`) | `curl -H "Authorization: Bearer <secret>" -H "X-Envelope-To: <inbox address>" -H "Content-Type: message/rfc822" --data-binary @mail.eml http://localhost:8080/api/v1/inbound-mail` |
 
-CI (`.github/workflows/ci.yml`) runs the API build and the client checks (i18n, format, lint, type-check, web build)
-on every push to `main` and every pull request.
+CI (`.github/workflows/ci.yml`) runs the API build, the client checks (i18n, format, lint, type-check, web build) and
+builds both container images on every push to `main` and every pull request.

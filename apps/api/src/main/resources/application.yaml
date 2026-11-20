@@ -35,6 +35,9 @@ spring:
 server:
   error:
     include-stacktrace: never
+  # Deployed behind a reverse proxy: the client address (for rate limits) and scheme come from X-Forwarded-* headers
+  # set by a trusted proxy on a private network.
+  forward-headers-strategy: native
 
 management:
   endpoints:

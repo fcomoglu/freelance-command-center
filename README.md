@@ -25,7 +25,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | AI | Claude via the official Anthropic Java SDK |
 | Web | React, TypeScript, Vite, TanStack Query, i18next |
 | Mobile | Expo (React Native), TypeScript, Expo Router |
-| Tooling | Maven, npm workspaces, Docker Compose, GitHub Actions |
+| Tooling | Maven, npm workspaces, Docker (images and Compose), GitHub Actions |
 
 ## Getting started
 
@@ -38,6 +38,9 @@ cd apps/api && ./mvnw spring-boot:run # API on http://localhost:8080 (starts Pos
 npm run web:dev                       # web app on http://localhost:5173; e-mails arrive in Mailpit, http://localhost:8025
 npm run mobile:start                  # mobile app; press s to switch between the development build and Expo Go
 ```
+
+The API and web container images, and running them locally, are described in
+[docs/architecture.md](docs/architecture.md#deployment).
 
 ### Platform credentials
 

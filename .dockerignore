@@ -1,0 +1,9 @@
+# Build context of apps/web/Dockerfile (the API image uses apps/api as its context).
+**/node_modules
+**/.env
+**/.env.*
+.git
+apps/api
+apps/web/dist
+apps/mobile/*
+!apps/mobile/package.json

@@ -1,0 +1,31 @@
+# The API and web images running on the local infrastructure, as they run when deployed:
+#   docker compose -f infra/compose.yaml -f infra/compose.app.yaml up --build
+# The app is served on http://localhost:8081; apps/api/.env applies as with spring-boot:run.
+services:
+  api:
+    build: ../apps/api
+    env_file:
+      - path: ../apps/api/.env
+        required: false
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fcc
+      SPRING_DATASOURCE_USERNAME: fcc
+      SPRING_DATASOURCE_PASSWORD: fcc
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_MAIL_HOST: mailpit
+      FCC_IDENTITY_WEB_BASE_URL: http://localhost:8081
+      FCC_IDENTITY_WEB_ORIGINS: http://localhost:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - '8081:80'
+    depends_on:
+      - api
