@@ -47,7 +47,13 @@ public class CatalogJobUseCase {
                 clock.instant());
         jobs.save(job);
         events.publishEvent(new JobPublished(
-                job.id(), job.platform(), content.title(), content.description(), content.skills(), job.postedAt()));
+                job.id(),
+                job.platform(),
+                content.title(),
+                content.description(),
+                content.skills(),
+                content.url(),
+                job.postedAt()));
     }
 
     private static JobContent content(JobListing listing) {

@@ -68,3 +68,6 @@ fcc:
       client-id: ${UPWORK_CLIENT_ID:}
       client-secret: ${UPWORK_CLIENT_SECRET:}
       refresh-token: ${UPWORK_REFRESH_TOKEN:}
+  notification:
+    expo:
+      access-token: ${EXPO_ACCESS_TOKEN:}

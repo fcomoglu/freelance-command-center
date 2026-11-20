@@ -106,6 +106,13 @@
     "pagination": {
       "invalid_cursor": "Bu liste değişti. Sayfayı yenile."
     },
-    "unknown": "Bir şeyler ters gitti. Lütfen tekrar dene."
+    "unknown": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+    "matching": {
+      "invalid_keyword": "Bir anahtar kelime 1 ile 50 karakter arasında olmalı.",
+      "too_many_keywords": "En fazla 20 anahtar kelime ekleyebilirsin."
+    },
+    "notification": {
+      "invalid_push_token": "Bu cihaz bildirim alamıyor. Uygulamayı yeniden başlatıp tekrar dene."
+    }
   }
 }

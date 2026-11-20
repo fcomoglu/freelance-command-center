@@ -1,7 +1,7 @@
 package com.freelancecommandcenter.platform.adapter.out.upwork;
 
-import com.freelancecommandcenter.platform.adapter.out.HttpClients;
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
+import com.freelancecommandcenter.shared.http.HttpClients;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;

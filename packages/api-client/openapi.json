@@ -218,6 +218,117 @@
         "tags" : [ "Authentication" ]
       }
     },
+    "/api/v1/devices" : {
+      "post" : {
+        "description" : "Registering a known push token again moves it to the caller and returns the same id.",
+        "operationId" : "register",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DeviceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Device"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Register this phone for push notifications",
+        "tags" : [ "Devices" ]
+      }
+    },
+    "/api/v1/devices/{deviceId}" : {
+      "delete" : {
+        "description" : "Does nothing when the device is unknown or belongs to someone else.",
+        "operationId" : "unregister",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "deviceId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Stop push notifications to a phone",
+        "tags" : [ "Devices" ]
+      }
+    },
+    "/api/v1/job-filter" : {
+      "get" : {
+        "description" : "Decides which new jobs are notified. Without keywords no job is notified.",
+        "operationId" : "get",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobFilter"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The workspace's job filter",
+        "tags" : [ "Job filter" ]
+      },
+      "put" : {
+        "operationId" : "change",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/JobFilterRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobFilter"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Replace the workspace's job filter",
+        "tags" : [ "Job filter" ]
+      }
+    },
     "/api/v1/jobs" : {
       "get" : {
         "operationId" : "jobs",
@@ -310,6 +421,35 @@
   },
   "components" : {
     "schemas" : {
+      "Device" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id" ]
+      },
+      "DeviceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "language" : {
+            "type" : "string",
+            "description" : "Language of the notification texts",
+            "enum" : [ "en", "tr" ],
+            "maxLength" : 35,
+            "minLength" : 0
+          },
+          "pushToken" : {
+            "type" : "string",
+            "description" : "Expo push token",
+            "example" : "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "language", "pushToken" ]
+      },
       "Job" : {
         "type" : "object",
         "properties" : {
@@ -371,6 +511,50 @@
           }
         },
         "required" : [ "minimum", "type" ]
+      },
+      "JobFilter" : {
+        "type" : "object",
+        "properties" : {
+          "keywords" : {
+            "type" : "array",
+            "description" : "Lower-case, in the order given",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "platforms" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+            }
+          }
+        },
+        "required" : [ "keywords", "platforms" ]
+      },
+      "JobFilterRequest" : {
+        "type" : "object",
+        "properties" : {
+          "keywords" : {
+            "type" : "array",
+            "description" : "Whole words or phrases, matched case-insensitively; duplicates are dropped",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 50,
+              "minLength" : 0
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "platforms" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+            }
+          }
+        },
+        "required" : [ "keywords", "platforms" ]
       },
       "MeResponse" : {
         "type" : "object",

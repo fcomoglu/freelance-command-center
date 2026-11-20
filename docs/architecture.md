@@ -80,11 +80,23 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 - `job` turns each event into a catalog job, unique per platform listing. Only a newer platform update changes a
   job, so repeated events are harmless; a new job publishes `JobPublished`.
 
+### New-job notifications
+
+- Each workspace has one **job filter** (`matching`, `/api/v1/job-filter`): keywords and platforms. A job matches
+  when it is on a chosen platform and its title, description or skills contain a keyword as a whole word or phrase,
+  ignoring case. A filter without keywords matches nothing, so nobody is notified before choosing keywords.
+- `matching` checks every `JobPublished` against the filters of its platform that have keywords and publishes
+  `JobMatched` per matching workspace.
+- `notification` pushes each match to the phones of the workspace (`/api/v1/devices`, one per Expo push token, with
+  the app language for the texts) through the Expo Push Service, which forwards to FCM and APNs. The log
+  `notification.job_notifications` makes repeated events harmless. Tokens the service reports as unregistered are
+  removed; delivery receipts are not read. Push is best effort: a failed push is logged, not retried.
+
 ## Backend modules
 
 | Module | Responsibility |
 |---|---|
-| `identity` | Users, workspaces, authentication (JWT access + refresh tokens), devices. |
+| `identity` | Users, workspaces, authentication (JWT access + refresh tokens). |
 | `profile` | The freelancer's professional profile, imported read-only from the connected platform accounts; input of AI scoring and proposals (planned). |
 | `platform` | Platform connections (OAuth tokens, extension pairing), per-platform adapters, sync scheduling. The only module that knows platform specifics. |
 | `job` | The job catalog: normalized listings, de-duplication, visibility. Holds no per-user data. |
@@ -92,8 +104,8 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 | `matching` | Per-workspace job filters, rule-based pre-filtering and fit scores; re-scores when the profile or filters change. |
 | `proposal` | Proposal drafts, approval workflow, submission and outcome tracking (submitted → viewed → shortlisted → won / lost). |
 | `ai` | Claude integration: scoring, drafting, pricing. Prompt templates, caching strategy, usage/cost tracking per workspace. |
-| `notification` | The notification feed (new jobs, messages, bid status, platform notices) and its delivery: push (mobile), e-mail and in-app. |
-| `shared` | Cross-cutting kernel: IDs (including `WorkspaceId`), platform codes, money, pagination, error model. Kept deliberately small. |
+| `notification` | The notification feed (new jobs, messages, bid status, platform notices), the phones registered for push, and delivery: push (mobile), e-mail and in-app. |
+| `shared` | Cross-cutting kernel: IDs (including `WorkspaceId`), platform codes, money, pagination, error model, HTTP client settings. Kept deliberately small. |
 
 Each module follows the hexagonal layout described in `CLAUDE.md` (`domain` / `application` / `adapter`).
 

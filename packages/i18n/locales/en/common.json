@@ -106,6 +106,13 @@
     "pagination": {
       "invalid_cursor": "This list has changed. Reload the page."
     },
-    "unknown": "Something went wrong. Please try again."
+    "unknown": "Something went wrong. Please try again.",
+    "matching": {
+      "invalid_keyword": "A keyword has 1 to 50 characters.",
+      "too_many_keywords": "You can add up to 20 keywords."
+    },
+    "notification": {
+      "invalid_push_token": "This device cannot receive notifications. Restart the app and try again."
+    }
   }
 }

@@ -1,7 +1,7 @@
 package com.freelancecommandcenter.platform.adapter.out.freelancer;
 
-import com.freelancecommandcenter.platform.adapter.out.HttpClients;
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
+import com.freelancecommandcenter.shared.http.HttpClients;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

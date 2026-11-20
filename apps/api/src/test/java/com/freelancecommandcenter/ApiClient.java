@@ -36,6 +36,18 @@ public class ApiClient {
                 .body(body));
     }
 
+    public ResponseEntity<Map<String, Object>> put(String path, Object body, HttpHeaders headers) {
+        return send(client.put()
+                .uri(path)
+                .headers(h -> h.addAll(headers))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body));
+    }
+
+    public ResponseEntity<Map<String, Object>> delete(String path, HttpHeaders headers) {
+        return send(client.delete().uri(path).headers(h -> h.addAll(headers)));
+    }
+
     public ResponseEntity<Map<String, Object>> get(String path, HttpHeaders headers) {
         return send(client.get().uri(path).headers(h -> h.addAll(headers)));
     }

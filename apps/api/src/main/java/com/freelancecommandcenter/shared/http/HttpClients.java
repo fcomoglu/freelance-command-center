@@ -1,11 +1,11 @@
-package com.freelancecommandcenter.platform.adapter.out;
+package com.freelancecommandcenter.shared.http;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 
-/** HTTP settings shared by the platform API clients. */
+/** HTTP settings shared by the clients of external APIs. */
 public final class HttpClients {
 
     private HttpClients() {}
