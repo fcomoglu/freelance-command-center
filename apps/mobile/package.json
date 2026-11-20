@@ -60,6 +60,9 @@
     "preset": "jest-expo",
     "moduleNameMapper": {
       "\\.css$": "<rootDir>/jest/style-mock.js"
-    }
+    },
+    "setupFiles": [
+      "<rootDir>/jest/setup.js"
+    ]
   }
 }

@@ -1,19 +1,15 @@
 import { type components } from '@fcc/api-client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nextProvider } from 'react-i18next';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import i18n from '../i18n';
+import { ok, renderScreen } from '../test-support';
 import { NotificationsPage } from './notifications';
 
 type Notification = components['schemas']['Notification'];
 
 const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn() }));
 vi.mock('../api', () => ({ api: { fetchClient: api } }));
-
-const ok = (data?: unknown) => ({ data, response: new Response(null, { status: data ? 200 : 204 }) });
 
 const notice: Notification = {
   id: 'n-1',
@@ -36,24 +32,14 @@ const decision: Notification = {
   read: true,
 };
 
-function showFeed(...pages: Notification[][]) {
+async function showFeed(...pages: Notification[][]) {
   pages.forEach((items, index) =>
     api.GET.mockResolvedValueOnce(
       ok({ items, nextCursor: index < pages.length - 1 ? `page-${index + 1}` : null }),
     ),
   );
-  render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <I18nextProvider i18n={i18n}>
-        <NotificationsPage />
-      </I18nextProvider>
-    </QueryClientProvider>,
-  );
+  await renderScreen(<NotificationsPage />);
 }
-
-beforeEach(async () => {
-  await i18n.changeLanguage('en');
-});
 
 afterEach(() => {
   cleanup();
@@ -62,7 +48,7 @@ afterEach(() => {
 
 describe('NotificationsPage', () => {
   it('shows a notice with the platform text and a decision with its translated kind', async () => {
-    showFeed([notice, decision]);
+    await showFeed([notice, decision]);
 
     const [first, second] = await screen.findAllByRole('listitem');
     expect(within(first).getByText('You received a new order')).toBeTruthy();
@@ -78,7 +64,7 @@ describe('NotificationsPage', () => {
   });
 
   it('marks an unread notification read when it is opened on its platform', async () => {
-    showFeed([notice]);
+    await showFeed([notice]);
     api.POST.mockResolvedValue(ok());
     api.GET.mockResolvedValue(ok({ items: [{ ...notice, read: true }], nextCursor: null }));
 
@@ -93,7 +79,7 @@ describe('NotificationsPage', () => {
   });
 
   it('marks everything read, offering it only while something is unread', async () => {
-    showFeed([notice, decision]);
+    await showFeed([notice, decision]);
     api.POST.mockResolvedValue(ok());
     api.GET.mockResolvedValue(ok({ items: [{ ...notice, read: true }, decision], nextCursor: null }));
 
@@ -104,7 +90,7 @@ describe('NotificationsPage', () => {
   });
 
   it('loads older notifications page by page', async () => {
-    showFeed([notice], [decision]);
+    await showFeed([notice], [decision]);
 
     await userEvent.click(await screen.findByRole('button', { name: 'Show more' }));
 
@@ -119,7 +105,7 @@ describe('NotificationsPage', () => {
   });
 
   it('explains an empty feed', async () => {
-    showFeed([]);
+    await showFeed([]);
 
     expect(
       await screen.findByText('No notifications yet. They appear here as your platforms send them.'),
@@ -128,7 +114,7 @@ describe('NotificationsPage', () => {
 
   it('shows the translated error when the feed cannot be loaded', async () => {
     api.GET.mockRejectedValue(new TypeError('Failed to fetch'));
-    showFeed();
+    await showFeed();
 
     expect(
       await screen.findByText('The server cannot be reached. Check your connection and try again.'),

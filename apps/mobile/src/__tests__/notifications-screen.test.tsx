@@ -1,23 +1,16 @@
 import type { components } from '@fcc/api-client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 
 import { api } from '@/api';
 import NotificationsScreen from '@/app/(app)/notifications';
-import i18n from '@/i18n';
+import { ok, renderScreen } from '@/test-support';
 
 type Notification = components['schemas']['Notification'];
 
 jest.mock('@/api', () => ({ api: { fetchClient: { GET: jest.fn(), POST: jest.fn() } } }));
-jest.mock(
-  'react-native-safe-area-context',
-  () => jest.requireActual('react-native-safe-area-context/jest/mock').default,
-);
 
 const fetchClient = jest.mocked(api.fetchClient);
-const ok = (data?: unknown) =>
-  ({ data, response: new Response(null, { status: data ? 200 : 204 }) }) as never;
 
 const notice: Notification = {
   id: 'n-1',
@@ -40,23 +33,12 @@ const decision: Notification = {
   read: true,
 };
 
-// Garbage collection timers would keep Jest running after the last test.
-const testQueryClient = () =>
-  new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { gcTime: Infinity } },
-  });
-
 async function showFeed(items: Notification[]) {
   fetchClient.GET.mockResolvedValue(ok({ items, nextCursor: null }));
-  await render(
-    <QueryClientProvider client={testQueryClient()}>
-      <NotificationsScreen />
-    </QueryClientProvider>,
-  );
+  await renderScreen(<NotificationsScreen />);
 }
 
-beforeEach(async () => {
-  await i18n.changeLanguage('en');
+beforeEach(() => {
   jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
 });
 

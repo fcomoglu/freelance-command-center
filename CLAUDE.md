@@ -104,8 +104,9 @@ Other notes:
 - TypeScript `strict`, Prettier (root `.prettierrc.json`), oxlint (web), ESLint via `expo lint` (mobile).
 - Tests: Vitest for web and the shared packages (web screens with jsdom and Testing Library), Jest with `jest-expo`
   and React Native Testing Library for mobile. Test files sit next to the code as `*.test.ts(x)`; mobile screen tests
-  live in `src/__tests__/`, because `src/app/` holds only routes. Tests mock the API client, not `fetch`, except the
-  API client's own tests.
+  live in `src/__tests__/`, because `src/app/` holds only routes. Screens render through `renderScreen` from
+  `src/test-support.tsx`. Tests mock the API client, not `fetch`, except the API client's own tests. The web app's
+  React range includes the version mobile pins, so the workspace holds one React copy, which the tests need.
 - Server state with TanStack Query; API calls only through `packages/api-client` (`createApiClient`). Never edit
   `openapi.json` or `src/schema.d.ts` by hand.
 - Sessions: `createApiClient` also returns a `session` that keeps the access token in memory, refreshes it before it
