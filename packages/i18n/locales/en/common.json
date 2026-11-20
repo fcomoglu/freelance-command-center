@@ -96,14 +96,17 @@
       "weak_password": "The password must be 10 to 128 characters long.",
       "invalid_email": "Enter a valid e-mail address.",
       "too_many_attempts": "Too many attempts. Please try again later.",
-      "unauthenticated": "Your session has ended. Please sign in again."
+      "unauthenticated": "Your session has ended. Please sign in again.",
+      "origin_not_allowed": "This page cannot use your session. Open the app from its own address."
     },
     "validation": {
       "failed": "Please check the highlighted fields.",
       "not_blank": "This field is required.",
       "size": "This value is too long.",
       "max": "This value is too large.",
-      "min": "This value is too small."
+      "min": "This value is too small.",
+      "not_null": "This field is required.",
+      "pattern": "This value has an invalid format."
     },
     "network": {
       "unreachable": "The server cannot be reached. Check your connection and try again."
@@ -130,6 +133,13 @@
       "connection_not_found": "This account is not connected.",
       "unavailable": "The platform cannot be reached right now. Try again later.",
       "email_not_verified": "Confirm your e-mail address first with the link in the e-mail we sent you."
+    },
+    "money": {
+      "invalid_amount": "The amount is not valid.",
+      "invalid_currency": "The currency is not supported."
+    },
+    "server": {
+      "error": "Something went wrong on our side. Please try again later."
     }
   },
   "jobAlerts": {
