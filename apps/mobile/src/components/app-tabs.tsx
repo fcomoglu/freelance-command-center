@@ -28,6 +28,11 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon sf="message" md="chat" />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="notifications">
+        <NativeTabs.Trigger.Label>{t('nav.notifications')}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="bell" md="notifications" />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="settings">
         <NativeTabs.Trigger.Label>{t('nav.settings')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

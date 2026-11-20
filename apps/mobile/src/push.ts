@@ -12,9 +12,10 @@ import { api } from '@/api';
 
 /** Id of this phone at the API while it receives push notifications; absent when they are off. */
 const DEVICE_ID_KEY = 'fcc.deviceId';
-/** Android channels of new-job alerts and new messages; the API sends them with the same channel ids. */
+/** Android channels of new-job alerts, new messages and platform notifications; the API sends them with these ids. */
 const JOBS_CHANNEL = 'jobs';
 const MESSAGES_CHANNEL = 'messages';
+const NOTIFICATIONS_CHANNEL = 'notifications';
 
 export type PushResult = 'enabled' | 'denied' | 'unsupported';
 
@@ -53,6 +54,10 @@ export async function enablePush(language: string, t: TFunction): Promise<PushRe
       name: t('notifications.messagesChannel'),
       importance: AndroidImportance.HIGH,
     });
+    await Notifications.setNotificationChannelAsync(NOTIFICATIONS_CHANNEL, {
+      name: t('notifications.feedChannel'),
+      importance: AndroidImportance.HIGH,
+    });
   }
   let permission = await Notifications.getPermissionsAsync();
   if (!permission.granted && permission.canAskAgain) {
@@ -77,8 +82,16 @@ export async function disablePush(): Promise<void> {
   await SecureStore.deleteItemAsync(DEVICE_ID_KEY);
 }
 
-/** The platform page a tapped notification points to: the job listing or the conversation. */
+/** The platform page a tapped notification points to: the job listing, the conversation or the notification. */
 export function notificationUrl(response: Notifications.NotificationResponse): string | undefined {
   const url = response.notification.request.content.data?.url;
   return typeof url === 'string' && url.startsWith('https://') ? url : undefined;
+}
+
+/** The feed entry of a tapped platform notification, which opening it marks read. */
+export function feedNotificationId(response: Notifications.NotificationResponse): string | undefined {
+  const data = response.notification.request.content.data;
+  return data?.type === 'notification' && typeof data.notificationId === 'string'
+    ? data.notificationId
+    : undefined;
 }
