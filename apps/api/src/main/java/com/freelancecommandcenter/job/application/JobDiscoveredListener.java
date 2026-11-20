@@ -16,6 +16,6 @@ class JobDiscoveredListener {
 
     @ApplicationModuleListener
     void on(JobDiscovered event) {
-        catalog.record(event.listing());
+        catalog.record(event);
     }
 }

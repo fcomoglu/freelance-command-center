@@ -4,6 +4,7 @@ import com.freelancecommandcenter.job.domain.Job;
 import com.freelancecommandcenter.job.domain.JobBudget;
 import com.freelancecommandcenter.job.domain.JobContent;
 import com.freelancecommandcenter.shared.id.JobId;
+import com.freelancecommandcenter.shared.id.WorkspaceId;
 import com.freelancecommandcenter.shared.money.Money;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
 import jakarta.persistence.Entity;
@@ -27,6 +28,7 @@ class JobEntity {
     @Id
     private UUID id;
 
+    private UUID ownerWorkspaceId;
     private String platform;
     private String externalId;
     private String title;
@@ -57,6 +59,7 @@ class JobEntity {
 
     void apply(Job job) {
         JobContent content = job.content();
+        ownerWorkspaceId = job.owner().map(WorkspaceId::value).orElse(null);
         platform = job.platform().value();
         externalId = job.externalId();
         title = content.title();
@@ -89,6 +92,7 @@ class JobEntity {
                 Optional.ofNullable(language));
         return Job.restore(
                 new JobId(id),
+                Optional.ofNullable(ownerWorkspaceId).map(WorkspaceId::new),
                 PlatformCode.fromValue(platform),
                 externalId,
                 content,

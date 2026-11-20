@@ -373,6 +373,7 @@
     },
     "/api/v1/jobs" : {
       "get" : {
+        "description" : "Jobs from platform APIs and the jobs read from the workspace's forwarded e-mails.",
         "operationId" : "jobs",
         "parameters" : [ {
           "description" : "Only jobs of this platform",

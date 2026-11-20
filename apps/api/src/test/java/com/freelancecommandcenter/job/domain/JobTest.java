@@ -17,7 +17,8 @@ class JobTest {
 
     @Test
     void onlyANewerPlatformUpdateReplacesTheContent() {
-        Job job = Job.discover(PlatformCode.FREELANCER, "42", content("First"), POSTED, POSTED, POSTED);
+        Job job =
+                Job.discover(Optional.empty(), PlatformCode.FREELANCER, "42", content("First"), POSTED, POSTED, POSTED);
 
         assertThat(job.update(content("Repeated"), POSTED)).isFalse();
         assertThat(job.update(content("Older"), POSTED.minusSeconds(60))).isFalse();

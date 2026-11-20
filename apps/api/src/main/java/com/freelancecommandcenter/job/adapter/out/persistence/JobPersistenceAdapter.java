@@ -2,6 +2,7 @@ package com.freelancecommandcenter.job.adapter.out.persistence;
 
 import com.freelancecommandcenter.job.application.port.out.JobRepository;
 import com.freelancecommandcenter.job.domain.Job;
+import com.freelancecommandcenter.shared.id.WorkspaceId;
 import com.freelancecommandcenter.shared.pagination.KeysetCursor;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.util.List;
@@ -21,8 +22,12 @@ class JobPersistenceAdapter implements JobRepository {
     }
 
     @Override
-    public Optional<Job> findByListing(PlatformCode platform, String externalId) {
-        return jobs.findByPlatformAndExternalId(platform.value(), externalId).map(JobEntity::toDomain);
+    public Optional<Job> findByListing(Optional<WorkspaceId> owner, PlatformCode platform, String externalId) {
+        Optional<JobEntity> entity = owner.isPresent()
+                ? jobs.findByOwnerWorkspaceIdAndPlatformAndExternalId(
+                        owner.get().value(), platform.value(), externalId)
+                : jobs.findByOwnerWorkspaceIdIsNullAndPlatformAndExternalId(platform.value(), externalId);
+        return entity.map(JobEntity::toDomain);
     }
 
     @Override
@@ -33,18 +38,23 @@ class JobPersistenceAdapter implements JobRepository {
         jobs.save(entity);
     }
 
-    /** One query per filter combination keeps every variant on its index (see V4__job.sql). */
+    /**
+     * One query per filter combination keeps every variant on its index (see V4__job.sql); the owner condition filters
+     * while the index is read in feed order.
+     */
     @Override
-    public List<Job> findFeed(Optional<PlatformCode> platform, Optional<KeysetCursor> after, int limit) {
+    public List<Job> findFeed(
+            WorkspaceId viewer, Optional<PlatformCode> platform, Optional<KeysetCursor> after, int limit) {
+        UUID workspace = viewer.value();
         Limit max = Limit.of(limit);
         List<JobEntity> rows;
         if (platform.isPresent()) {
             String code = platform.get().value();
-            rows = after.map(cursor -> jobs.findPlatformFeedAfter(code, cursor.at(), cursor.id(), max))
-                    .orElseGet(() -> jobs.findPlatformFeed(code, max));
+            rows = after.map(cursor -> jobs.findPlatformFeedAfter(workspace, code, cursor.at(), cursor.id(), max))
+                    .orElseGet(() -> jobs.findPlatformFeed(workspace, code, max));
         } else {
-            rows = after.map(cursor -> jobs.findFeedAfter(cursor.at(), cursor.id(), max))
-                    .orElseGet(() -> jobs.findFeed(max));
+            rows = after.map(cursor -> jobs.findFeedAfter(workspace, cursor.at(), cursor.id(), max))
+                    .orElseGet(() -> jobs.findFeed(workspace, max));
         }
         return rows.stream().map(JobEntity::toDomain).toList();
     }

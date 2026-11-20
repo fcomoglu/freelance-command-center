@@ -5,7 +5,9 @@ import com.freelancecommandcenter.job.application.port.out.JobRepository;
 import com.freelancecommandcenter.job.domain.Job;
 import com.freelancecommandcenter.job.domain.JobBudget;
 import com.freelancecommandcenter.job.domain.JobContent;
+import com.freelancecommandcenter.platform.api.JobDiscovered;
 import com.freelancecommandcenter.platform.api.JobListing;
+import com.freelancecommandcenter.shared.id.WorkspaceId;
 import java.time.Clock;
 import java.util.Optional;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,9 +30,11 @@ public class CatalogJobUseCase {
 
     /** Idempotent: the same listing again, or an older version of it, leaves the catalog unchanged. */
     @Transactional
-    public void record(JobListing listing) {
+    public void record(JobDiscovered discovered) {
+        JobListing listing = discovered.listing();
+        Optional<WorkspaceId> owner = Optional.ofNullable(discovered.owner());
         JobContent content = content(listing);
-        Optional<Job> existing = jobs.findByListing(listing.platform(), listing.externalId());
+        Optional<Job> existing = jobs.findByListing(owner, listing.platform(), listing.externalId());
         if (existing.isPresent()) {
             Job job = existing.get();
             if (job.update(content, listing.updatedAt())) {
@@ -39,6 +43,7 @@ public class CatalogJobUseCase {
             return;
         }
         Job job = Job.discover(
+                owner,
                 listing.platform(),
                 listing.externalId(),
                 content,
@@ -48,6 +53,7 @@ public class CatalogJobUseCase {
         jobs.save(job);
         events.publishEvent(new JobPublished(
                 job.id(),
+                discovered.owner(),
                 job.platform(),
                 content.title(),
                 content.description(),

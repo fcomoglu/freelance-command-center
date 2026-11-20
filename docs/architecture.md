@@ -43,7 +43,7 @@ flowchart LR
 |---|---|---|
 | Freelancer.com | Official REST API | Server-side job sync with one configured access token; messages and bid status through each user's OAuth 2 connection; bid submission through the API. |
 | Upwork | Official GraphQL API (OAuth 2) | Server-side job sync with the server's own authorized API key; messages and proposal status through each user's OAuth 2 connection. Requires an approved API key. |
-| Fiverr, Bionluk, Arc.dev | Forwarded notification e-mails ([ADR 0012](adr/0012-platforms-without-api-via-forwarded-notification-emails.md)) | Their terms forbid automated access, so the application never touches these sites. The user forwards the platform's notification e-mails to the workspace's inbox address; replies and proposals happen on the platform. |
+| Fiverr, Bionluk, Arc.dev | Forwarded notification e-mails ([ADR 0012](adr/0012-platforms-without-api-via-forwarded-notification-emails.md)) | Their terms forbid automated access, so the application never touches these sites. The user forwards the platform's notification e-mails to the workspace's inbox address; replies and proposals happen on the platform. The e-mails differ per platform: Arc.dev sends matching jobs; Fiverr, a seller marketplace without a job board, sends messages, orders and buyer briefs; Bionluk sends messages and notices, and only the buyer requests it e-mails reach the feed. |
 
 Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-style-and-platform-patterns.md)):
 
@@ -56,8 +56,10 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 - **Decorators** around adapters for rate limiting (Redis token bucket), retries, circuit breaking and OAuth token
   refresh, so adapters contain only platform logic.
 - **Factory** for API clients configured with one connection's credentials.
-- **Mail parsers** (planned): one parser (strategy) per platform turns a recognized notification e-mail into the same
-  canonical model, so the rest of the system does not know whether a job came from an API or from an e-mail.
+- **Mail parsers:** a `PlatformMailParser` (strategy) reads one kind of notification e-mail of a platform into the
+  same canonical model, so the rest of the system does not know whether a job came from an API or from an e-mail.
+  `PlatformRegistry` holds any number of parsers per platform; the first one that understands a mail reads it. The
+  parsers for Fiverr, Bionluk and Arc.dev mails are (planned).
 
 ### Job sync
 
@@ -78,7 +80,7 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
   A failed run keeps the watermark, and the next run reads the same period again.
 - Each run stores the raw payloads and one `JobDiscovered` event per listing in one transaction (outbox); the
   platform call itself happens outside the transaction.
-- `job` turns each event into a catalog job, unique per platform listing. Only a newer platform update changes a
+- `job` turns each event into a catalog job, unique per platform listing and owner. Only a newer platform update changes a
   job, so repeated events are harmless; a new job publishes `JobPublished`.
 
 ### Forwarded platform e-mails
@@ -91,7 +93,11 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
   service, not a user.
 - The sender's domain names the platform. Every mail is stored once per Message-ID with its raw message
   (`platform.inbound_mails`) and listed for the workspace (`/api/v1/inbound-mails`) as `processed`,
-  `unrecognized` (platform known, no parser for it yet) or `unknown_sender`.
+  `unrecognized` (platform known, no parser understands the mail) or `unknown_sender`.
+- The platform's mail parsers read the mail in the same transaction. Each job in it is published as a
+  `JobDiscovered` event with the workspace as its owner, so it becomes a private job of that workspace and is matched
+  only against its job filter. A redelivered mail publishes nothing. A parser that fails leaves the mail
+  `unrecognized` instead of rejecting it, and the stored raw message can be read again.
 
 ### New-job notifications
 

@@ -220,7 +220,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The job feed, newest posting first */
+        /**
+         * The job feed, newest posting first
+         * @description Jobs from platform APIs and the jobs read from the workspace's forwarded e-mails.
+         */
         get: operations["jobs"];
         put?: never;
         post?: never;

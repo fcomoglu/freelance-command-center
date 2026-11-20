@@ -1,19 +1,16 @@
 package com.freelancecommandcenter.platform.application.port.out;
 
-import java.time.Instant;
-import java.util.Optional;
+import com.freelancecommandcenter.platform.domain.MailMessage;
 
-/** Reads the headers of a raw MIME message. */
+/** Reads a raw MIME message. */
 public interface MailReader {
 
-    /** @throws UnreadableMailException when the bytes are not a MIME message */
-    MailHeaders headers(byte[] raw);
-
     /**
-     * @param messageId the Message-ID header, if present
-     * @param sender the address of the first From header; empty when missing
+     * A body that cannot be decoded is left empty instead of failing, so the mail is still stored for a later reading.
+     *
+     * @throws UnreadableMailException when the bytes are not a MIME message
      */
-    record MailHeaders(Optional<String> messageId, String sender, String subject, Optional<Instant> sentAt) {}
+    MailMessage read(byte[] raw);
 
     class UnreadableMailException extends RuntimeException {
 

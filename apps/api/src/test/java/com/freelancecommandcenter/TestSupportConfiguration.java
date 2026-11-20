@@ -21,6 +21,11 @@ class TestSupportConfiguration {
         return new FakeJobSource();
     }
 
+    @Bean
+    FakeMailParser fakeMailParser() {
+        return new FakeMailParser();
+    }
+
     /** Replaces the Expo Push Service client. */
     @Bean
     @Primary

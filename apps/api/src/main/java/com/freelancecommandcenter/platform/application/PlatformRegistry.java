@@ -1,7 +1,9 @@
 package com.freelancecommandcenter.platform.application;
 
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
+import com.freelancecommandcenter.platform.application.port.out.PlatformMailParser;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -17,12 +19,18 @@ import org.springframework.stereotype.Component;
 public class PlatformRegistry {
 
     private final Map<PlatformCode, JobSource> jobSources = new EnumMap<>(PlatformCode.class);
+    private final Map<PlatformCode, List<PlatformMailParser>> mailParsers = new EnumMap<>(PlatformCode.class);
 
-    public PlatformRegistry(List<JobSource> jobSources) {
+    public PlatformRegistry(List<JobSource> jobSources, List<PlatformMailParser> mailParsers) {
         for (JobSource source : jobSources) {
             if (this.jobSources.putIfAbsent(source.platform(), source) != null) {
                 throw new IllegalStateException("More than one job source for " + source.platform());
             }
+        }
+        for (PlatformMailParser parser : mailParsers) {
+            this.mailParsers
+                    .computeIfAbsent(parser.platform(), platform -> new ArrayList<>())
+                    .add(parser);
         }
     }
 
@@ -32,5 +40,10 @@ public class PlatformRegistry {
 
     public Collection<JobSource> jobSources() {
         return List.copyOf(jobSources.values());
+    }
+
+    /** The parsers for the notification e-mails of a platform; each understands its own kinds of mail. */
+    public List<PlatformMailParser> mailParsers(PlatformCode platform) {
+        return List.copyOf(mailParsers.getOrDefault(platform, List.of()));
     }
 }

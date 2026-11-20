@@ -6,6 +6,7 @@ import com.freelancecommandcenter.job.domain.JobBudget;
 import com.freelancecommandcenter.job.domain.JobContent;
 import com.freelancecommandcenter.shared.pagination.KeysetCursor;
 import com.freelancecommandcenter.shared.platform.PlatformCode;
+import com.freelancecommandcenter.shared.security.AuthenticatedUser;
 import com.freelancecommandcenter.shared.web.MoneyDto;
 import com.freelancecommandcenter.shared.web.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,14 +34,19 @@ class JobController {
         this.feed = feed;
     }
 
-    @Operation(summary = "The job feed, newest posting first", security = @SecurityRequirement(name = "bearer"))
+    @Operation(
+            summary = "The job feed, newest posting first",
+            description = "Jobs from platform APIs and the jobs read from the workspace's forwarded e-mails.",
+            security = @SecurityRequirement(name = "bearer"))
     @GetMapping("/api/v1/jobs")
     PageResponse<JobResponse> jobs(
+            AuthenticatedUser caller,
             @Parameter(description = "Only jobs of this platform") @RequestParam Optional<PlatformCode> platform,
             @Parameter(description = "`nextCursor` of the previous page") @RequestParam Optional<String> cursor,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
         return PageResponse.from(
-                feed.list(platform, cursor.map(KeysetCursor::decode), limit), JobController::toResponse);
+                feed.list(caller.workspaceId(), platform, cursor.map(KeysetCursor::decode), limit),
+                JobController::toResponse);
     }
 
     private static JobResponse toResponse(Job job) {

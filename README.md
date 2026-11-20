@@ -10,7 +10,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | Feature | Status |
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
-| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails; reading Fiverr, Bionluk and Arc.dev e-mails next) |
+| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Arc.dev and Bionluk (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails whose jobs stay private to your workspace; parsers for the Arc.dev and Bionluk e-mails next) |
 | **Unified messages:** conversations from every platform in one list, with unread state and push notifications | planned |
 | **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
@@ -82,6 +82,13 @@ Fiverr, Bionluk and Arc.dev are read from their notification e-mails
 ([ADR 0012](docs/adr/0012-platforms-without-api-via-forwarded-notification-emails.md)). Each workspace has an inbox
 address, shown on the web app's **Platform e-mails** page; a forwarding rule in your mailbox sends the platforms'
 notification e-mails there.
+
+- The platform is recognized by the sender, so the rule must keep the original sender: in Outlook use **Redirect to**
+  (**Forward to** sends the mail as yourself); Gmail's forwarding keeps it.
+- The platforms only send what you have switched on: keep their e-mail notifications enabled, and keep your gigs and
+  listings active (Fiverr sends buyer briefs only for active gigs). Fiverr has no job board, so its e-mails bring
+  messages, orders and briefs rather than jobs.
+- Jobs read from your e-mails are visible only in your workspace.
 
 - The address domain is `INBOUND_MAIL_DOMAIN`. In production a mail routing service (for example Cloudflare Email
   Routing with an Email Worker) receives mail for that domain and posts each raw message to
