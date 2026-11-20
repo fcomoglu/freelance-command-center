@@ -44,6 +44,13 @@ export function AppLayout() {
         >
           {t('nav.jobAlerts')}
         </Link>
+        <Link
+          to="/platform-mail"
+          className="text-gray-600 hover:underline dark:text-gray-400"
+          activeProps={{ className: 'font-semibold text-gray-900 dark:text-gray-100' }}
+        >
+          {t('nav.platformMail')}
+        </Link>
       </nav>
       {me.data && !me.data.emailVerified && <VerifyEmailBanner />}
       <main className="px-6 py-8">

@@ -6,7 +6,8 @@
   "nav": {
     "jobs": "İlanlar",
     "settings": "Ayarlar",
-    "jobAlerts": "İlan bildirimleri"
+    "jobAlerts": "İlan bildirimleri",
+    "platformMail": "Platform e-postaları"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -138,5 +139,28 @@
   },
   "notifications": {
     "jobsChannel": "Yeni ilanlar"
+  },
+  "platformMail": {
+    "title": "Platform e-postaları",
+    "intro": "Fiverr, Bionluk ve Arc.dev'in iş ilanı ve mesajlar için bir API'si yok; bu yüzden gelen kutuna bildirim e-postalarıyla ulaşırlar. Bu e-postaları aşağıdaki kişisel adresine yönlendir.",
+    "address": "Yönlendirme adresin",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "steps": {
+      "rule": "E-posta hesabında (Gmail, Outlook, ...) bu adrese bir yönlendirme kuralı oluştur.",
+      "senders": "Kuralı yalnızca fiverr.com, bionluk.com ve arc.dev adreslerinden gelen e-postalarla sınırla; başka hiçbir e-posta hesabından çıkmasın.",
+      "check": "Yönlendirilen e-postalar birkaç saniye içinde aşağıdaki listede görünür."
+    },
+    "renewHint": "Bu adresi bilen herkes gelen kutuna e-posta gönderebilir. Adres başkalarının eline geçtiyse yenile ve yönlendirme kuralını güncelle; eski adrese gelen e-postalar atılır.",
+    "renew": "Adresi yenile",
+    "recent": "Alınan e-postalar",
+    "empty": "Henüz e-posta alınmadı.",
+    "noSubject": "(konu yok)",
+    "loadMore": "Daha fazla göster",
+    "status": {
+      "processed": "Okundu",
+      "unrecognized": "Henüz okunamıyor",
+      "unknown_sender": "Platformdan değil"
+    }
   }
 }

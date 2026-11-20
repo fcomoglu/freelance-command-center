@@ -6,7 +6,8 @@
   "nav": {
     "jobs": "Jobs",
     "settings": "Settings",
-    "jobAlerts": "Job alerts"
+    "jobAlerts": "Job alerts",
+    "platformMail": "Platform e-mails"
   },
   "platforms": {
     "freelancer": "Freelancer.com",
@@ -138,5 +139,28 @@
   },
   "notifications": {
     "jobsChannel": "New jobs"
+  },
+  "platformMail": {
+    "title": "Platform e-mails",
+    "intro": "Fiverr, Bionluk and Arc.dev have no API for jobs and messages, so they reach your inbox through their notification e-mails. Forward those e-mails to your personal address below.",
+    "address": "Your forwarding address",
+    "copy": "Copy",
+    "copied": "Copied",
+    "steps": {
+      "rule": "In your mailbox (Gmail, Outlook, ...), create a forwarding rule to this address.",
+      "senders": "Limit the rule to mail from fiverr.com, bionluk.com and arc.dev, so no other mail leaves your mailbox.",
+      "check": "Forwarded e-mails appear in the list below within a few seconds."
+    },
+    "renewHint": "Anyone who knows this address can send mail into your inbox. If it has leaked, replace it and update your forwarding rule; mail to the old address is dropped.",
+    "renew": "Replace address",
+    "recent": "Received e-mails",
+    "empty": "No e-mails received yet.",
+    "noSubject": "(no subject)",
+    "loadMore": "Show more",
+    "status": {
+      "processed": "Read",
+      "unrecognized": "Not readable yet",
+      "unknown_sender": "Not from a platform"
+    }
   }
 }

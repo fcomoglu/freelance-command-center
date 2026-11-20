@@ -10,7 +10,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | Feature | Status |
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
-| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (browser extension, inside your own session), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android; the extension platforms next) |
+| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Fiverr, Bionluk and Arc.dev (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails; reading Fiverr, Bionluk and Arc.dev e-mails next) |
 | **Unified messages:** conversations from every platform in one list, with unread state and push notifications | planned |
 | **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
@@ -25,7 +25,6 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 | AI | Claude via the official Anthropic Java SDK |
 | Web | React, TypeScript, Vite, TanStack Query, i18next |
 | Mobile | Expo (React Native), TypeScript, Expo Router |
-| Extension | Chrome Manifest V3, TypeScript |
 | Tooling | Maven, npm workspaces, Docker Compose, GitHub Actions |
 
 ## Getting started
@@ -76,6 +75,19 @@ the app needs a development build with your own Expo and Firebase projects:
 4. Build and install the development build: `npx eas-cli@latest build --profile development --platform android`,
    then open the install link on the phone.
 5. Start Metro with `npm run mobile:start`, open the app, and turn on notifications under Settings.
+
+### Forwarded platform e-mails
+
+Fiverr, Bionluk and Arc.dev are read from their notification e-mails
+([ADR 0012](docs/adr/0012-platforms-without-api-via-forwarded-notification-emails.md)). Each workspace has an inbox
+address, shown on the web app's **Platform e-mails** page; a forwarding rule in your mailbox sends the platforms'
+notification e-mails there.
+
+- The address domain is `INBOUND_MAIL_DOMAIN`. In production a mail routing service (for example Cloudflare Email
+  Routing with an Email Worker) receives mail for that domain and posts each raw message to
+  `POST /api/v1/inbound-mail` with the recipient in `X-Envelope-To` and `INBOUND_MAIL_SECRET` as bearer token.
+- Locally, set `INBOUND_MAIL_SECRET` in `apps/api/.env` and post a saved `.eml` file with the `curl` command
+  from [CLAUDE.md](CLAUDE.md#commands).
 
 ## Documentation
 
