@@ -1,0 +1,4 @@
+# Email Worker of the inbound mail domain; deploy and configure it as described in docs/architecture.md#deployment.
+name = "fcc-inbound-mail"
+main = "src/index.js"
+compatibility_date = "2026-10-01"

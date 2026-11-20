@@ -11,6 +11,9 @@ Thumbs.db
 .env.*
 !.env.example
 
+# Database dumps of the production stack
+infra/backups/
+
 # Java / Maven
 target/
 build/

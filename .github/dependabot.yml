@@ -12,6 +12,10 @@ updates:
       # Expo pins compatible versions; upgrade with `npx expo install --fix` instead.
       - dependency-name: 'expo*'
       - dependency-name: 'react-native*'
+  - package-ecosystem: docker-compose
+    directory: /infra
+    schedule:
+      interval: weekly
   - package-ecosystem: github-actions
     directory: /
     schedule:

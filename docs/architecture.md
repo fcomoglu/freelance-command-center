@@ -17,7 +17,7 @@ flowchart LR
     user([Freelancer])
     web[Web app<br/>React]
     mobile[Mobile app<br/>Expo]
-    mail[Mail routing service<br/>inbound domain]
+    mail[Cloudflare Email Routing<br/>inbound domain]
     api[API<br/>Spring Boot]
     db[(PostgreSQL)]
     redis[(Redis)]
@@ -87,7 +87,8 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 
 - Each workspace has an inbox address (`/api/v1/mail-inbox`) whose local part is a random secret on the inbound
   domain (`INBOUND_MAIL_DOMAIN`); it can be replaced, and mail to a replaced address is dropped.
-- A mail routing service receives mail for the inbound domain and posts the raw MIME message to
+- A mail routing service (Cloudflare Email Routing with an Email Worker, see [Production](#production)) receives
+  mail for the inbound domain and posts the raw MIME message to
   `POST /api/v1/inbound-mail` with the envelope recipient in `X-Envelope-To` and the shared secret
   (`INBOUND_MAIL_SECRET`) as bearer token. The webhook has its own security filter chain, because the caller is a
   service, not a user.
@@ -307,7 +308,7 @@ sequenceDiagram
 
 ## Deployment
 
-The application ships as two container images, independent of the hosting provider (planned):
+The application ships as two container images, independent of the hosting provider:
 
 - **API** (`apps/api/Dockerfile`): the Spring Boot jar, extracted into layers, on a Java 25 JRE, running as a non-root
   user. It needs PostgreSQL 18, Redis 8 and an SMTP server, and is configured only through environment variables (the
@@ -317,6 +318,39 @@ The application ships as two container images, independent of the hosting provid
   cookie works. Built assets are cached for a year (their names carry a content hash), `index.html` is revalidated.
 
 `infra/compose.app.yaml` runs both images on the local infrastructure. CI builds both images on every change.
+
+### Production
+
+One host runs `infra/compose.prod.yaml` behind Cloudflare ([ADR 0016](adr/0016-single-host-deployment-behind-cloudflare.md)):
+
+```mermaid
+flowchart LR
+    browser([Browsers, phones]) -->|HTTPS app subdomain| edge[Cloudflare]
+    platforms([Forwarded platform mail]) -->|MX of the apex| routing[Email Routing<br/>catch-all]
+    routing --> worker[Email Worker]
+    worker -->|POST /api/v1/inbound-mail| edge
+    edge -->|tunnel| cloudflared
+    subgraph host [Host: infra/compose.prod.yaml]
+        cloudflared --> web[web nginx] --> api[API]
+        api --> postgres[(PostgreSQL)] & redis[(Redis)]
+        backup[daily pg_dump] --> postgres
+    end
+    api -->|SMTP| relay[SMTP relay]
+```
+
+- **Ingress:** a Cloudflare Tunnel; its public hostname (the app subdomain) points to `http://web:80`. The host
+  publishes no ports. Cloudflare appends the client address to `X-Forwarded-For`, which the API trusts behind its
+  internal proxies.
+- **Mail in:** Email Routing on the apex domain hands every address (catch-all) to the Email Worker in
+  `infra/cloudflare/inbound-mail-worker`, which posts the raw message to the webhook. Its secrets are `API_URL`
+  (`https://` plus the app subdomain) and `INBOUND_MAIL_SECRET` (the same value as in `apps/api/.env`).
+  `INBOUND_MAIL_DOMAIN` is the apex domain.
+- **Mail out:** an SMTP relay with SPF and DKIM on a sending subdomain (`SPRING_MAIL_*`, `FCC_IDENTITY_MAIL_FROM`).
+- **Settings:** `infra/.env` for the stack (app subdomain, database password, tunnel token) and `apps/api/.env` for the
+  API, both only on the host.
+- **Backups:** a daily `pg_dump` into `infra/backups/`, kept for 14 days; off-site copies (planned).
+- **Releases:** pull the checkout on the host and run the stack command again; Compose rebuilds and replaces the
+  changed images.
 
 ## Quality gates
 

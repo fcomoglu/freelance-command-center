@@ -1,0 +1,85 @@
+# Production stack on a single host behind a Cloudflare Tunnel (docs/adr/0016). On the server, from the checkout:
+#   docker compose -f infra/compose.prod.yaml up -d --build
+# Settings: infra/.env (see infra/.env.example) and apps/api/.env (see apps/api/.env.example).
+name: fcc-prod
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fcc
+      POSTGRES_USER: fcc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in infra/.env}
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fcc -d fcc']
+      interval: 5s
+      retries: 10
+
+  # Holds only rate-limit counters, which may be lost on a restart.
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+
+  api:
+    build: ../apps/api
+    restart: unless-stopped
+    env_file: ../apps/api/.env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fcc
+      SPRING_DATASOURCE_USERNAME: fcc
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      FCC_IDENTITY_WEB_BASE_URL: https://${APP_DOMAIN:?set APP_DOMAIN in infra/.env}
+      FCC_IDENTITY_WEB_ORIGINS: https://${APP_DOMAIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  # The only way in: Cloudflare forwards the app's hostname to http://web:80 (configured on the tunnel).
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.7
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in infra/.env}
+    depends_on:
+      - web
+
+  # A dump a day, kept for 14 days, in infra/backups on the host.
+  backup:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      PGHOST: postgres
+      PGUSER: fcc
+      PGDATABASE: fcc
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        while true; do
+          pg_dump --format=custom --file=/backups/fcc-$$(date +%F).dump \
+            && find /backups -name 'fcc-*.dump' -mtime +14 -delete
+          sleep 86400
+        done
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
