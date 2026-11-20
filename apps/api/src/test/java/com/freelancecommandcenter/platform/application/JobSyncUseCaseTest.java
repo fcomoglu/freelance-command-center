@@ -24,6 +24,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.unit.DataSize;
 
 class JobSyncUseCaseTest {
 
@@ -38,7 +39,8 @@ class JobSyncUseCaseTest {
             events::add,
             new TransactionTemplate(new NoTransactionManager()),
             new PlatformProperties(
-                    new PlatformProperties.JobSync(true, Duration.ofMinutes(5), Duration.ZERO, Duration.ofHours(1))),
+                    new PlatformProperties.JobSync(true, Duration.ofMinutes(5), Duration.ZERO, Duration.ofHours(1)),
+                    new PlatformProperties.Mail("inbound.localhost", "", DataSize.ofMegabytes(5))),
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test

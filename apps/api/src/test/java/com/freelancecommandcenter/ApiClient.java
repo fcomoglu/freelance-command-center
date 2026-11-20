@@ -36,6 +36,15 @@ public class ApiClient {
                 .body(body));
     }
 
+    /** Posts a raw body with the given content type, for example a MIME message. */
+    public ResponseEntity<Map<String, Object>> postRaw(String path, byte[] body, MediaType type, HttpHeaders headers) {
+        return send(client.post()
+                .uri(path)
+                .headers(h -> h.addAll(headers))
+                .contentType(type)
+                .body(body));
+    }
+
     public ResponseEntity<Map<String, Object>> put(String path, Object body, HttpHeaders headers) {
         return send(client.put()
                 .uri(path)

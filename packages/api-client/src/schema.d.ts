@@ -175,6 +175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inbound-mails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mails the address received, newest first */
+        get: operations["mails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/job-filter": {
         parameters: {
             query?: never;
@@ -207,6 +224,46 @@ export interface paths {
         get: operations["jobs"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail-inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The workspace's address for forwarded platform e-mails
+         * @description Fiverr, Bionluk and Arc.dev are read from their notification e-mails, forwarded here.
+         */
+        get: operations["get_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail-inbox/renewal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replace the address
+         * @description Mail to the previous address is no longer accepted.
+         */
+        post: operations["renew"];
         delete?: never;
         options?: never;
         head?: never;
@@ -269,6 +326,20 @@ export interface components {
              */
             pushToken: string;
         };
+        InboundMail: {
+            id: string;
+            /**
+             * @description Absent for senders other than the supported platforms
+             * @enum {string}
+             */
+            platform?: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            /** Format: date-time */
+            receivedAt: string;
+            sender: string;
+            /** @enum {string} */
+            status: "processed" | "unrecognized" | "unknown_sender";
+            subject: string;
+        };
         Job: {
             /** Format: int32 */
             bidCount?: number;
@@ -304,6 +375,9 @@ export interface components {
             keywords: string[];
             platforms: ("freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev")[];
         };
+        MailInbox: {
+            address: string;
+        };
         MeResponse: {
             email: string;
             emailVerified: boolean;
@@ -316,6 +390,10 @@ export interface components {
             amount: string;
             /** @example USD */
             currency: string;
+        };
+        PageResponseInboundMail: {
+            items: components["schemas"]["InboundMail"][];
+            nextCursor?: string;
         };
         PageResponseJob: {
             items: components["schemas"]["Job"][];
@@ -578,6 +656,30 @@ export interface operations {
             };
         };
     };
+    mails: {
+        parameters: {
+            query?: {
+                /** @description `nextCursor` of the previous page */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseInboundMail"];
+                };
+            };
+        };
+    };
     get: {
         parameters: {
             query?: never;
@@ -644,6 +746,46 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageResponseJob"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MailInbox"];
+                };
+            };
+        };
+    };
+    renew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MailInbox"];
                 };
             };
         };

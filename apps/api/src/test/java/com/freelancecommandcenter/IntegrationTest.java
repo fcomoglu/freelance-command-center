@@ -22,7 +22,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
             "fcc.identity.auth-requests-per-ip-per-minute=100000",
             "fcc.platform.job-sync.enabled=false",
             "fcc.platform.freelancer.access-token=",
-            "fcc.platform.upwork.client-id="
+            "fcc.platform.upwork.client-id=",
+            "fcc.platform.mail.webhook-secret=test-inbound-secret"
         })
 @Import({TestcontainersConfiguration.class, TestSupportConfiguration.class})
 @Testcontainers(disabledWithoutDocker = true)

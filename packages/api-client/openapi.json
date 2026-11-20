@@ -276,6 +276,48 @@
         "tags" : [ "Devices" ]
       }
     },
+    "/api/v1/inbound-mails" : {
+      "get" : {
+        "operationId" : "mails",
+        "parameters" : [ {
+          "description" : "`nextCursor` of the previous page",
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limit",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseInboundMail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mails the address received, newest first",
+        "tags" : [ "Mail inbox" ]
+      }
+    },
     "/api/v1/job-filter" : {
       "get" : {
         "description" : "Decides which new jobs are notified. Without keywords no job is notified.",
@@ -380,6 +422,52 @@
         "tags" : [ "Jobs" ]
       }
     },
+    "/api/v1/mail-inbox" : {
+      "get" : {
+        "description" : "Fiverr, Bionluk and Arc.dev are read from their notification e-mails, forwarded here.",
+        "operationId" : "get_1",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MailInbox"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The workspace's address for forwarded platform e-mails",
+        "tags" : [ "Mail inbox" ]
+      }
+    },
+    "/api/v1/mail-inbox/renewal" : {
+      "post" : {
+        "description" : "Mail to the previous address is no longer accepted.",
+        "operationId" : "renew",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MailInbox"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Replace the address",
+        "tags" : [ "Mail inbox" ]
+      }
+    },
     "/api/v1/me" : {
       "get" : {
         "operationId" : "me",
@@ -449,6 +537,34 @@
           }
         },
         "required" : [ "language", "pushToken" ]
+      },
+      "InboundMail" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "platform" : {
+            "type" : "string",
+            "description" : "Absent for senders other than the supported platforms",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          },
+          "receivedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "sender" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "processed", "unrecognized", "unknown_sender" ]
+          },
+          "subject" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "receivedAt", "sender", "status", "subject" ]
       },
       "Job" : {
         "type" : "object",
@@ -556,6 +672,15 @@
         },
         "required" : [ "keywords", "platforms" ]
       },
+      "MailInbox" : {
+        "type" : "object",
+        "properties" : {
+          "address" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "address" ]
+      },
       "MeResponse" : {
         "type" : "object",
         "properties" : {
@@ -592,6 +717,21 @@
           }
         },
         "required" : [ "amount", "currency" ]
+      },
+      "PageResponseInboundMail" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InboundMail"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "items" ]
       },
       "PageResponseJob" : {
         "type" : "object",

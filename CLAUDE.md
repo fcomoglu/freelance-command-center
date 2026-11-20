@@ -9,8 +9,9 @@ keep it current as described in [Documentation and comments](#documentation-and-
 Fiverr, Bionluk, Arc.dev, ...): new jobs, messages and platform notifications in one place, with push notifications;
 AI job scoring and proposal drafts come later (see [ADR 0011](docs/adr/0011-product-focus-one-inbox.md)).
 
-Clients: **web** (React), **mobile** (React Native / Expo) and a **browser extension** (Chrome, MV3) for platforms
-that do not offer a public API.
+Clients: **web** (React) and **mobile** (React Native / Expo). Platforms without a public API are read from the
+notification e-mails the user forwards to the application
+([ADR 0012](docs/adr/0012-platforms-without-api-via-forwarded-notification-emails.md)).
 
 This is a public portfolio project. Code quality, architecture and documentation are part of the product.
 
@@ -21,10 +22,9 @@ apps/
   api/          Spring Boot backend (Java) — modular monolith, hexagonal architecture
   web/          React + TypeScript + Vite web client
   mobile/       Expo (React Native) + TypeScript mobile client
-  extension/    Chrome MV3 extension (TypeScript) for platforms without an API (planned)
 packages/
   api-client/   Typed API client; `openapi.json` is exported by the API, types are generated from it
-  i18n/         Shared translation resources (en, tr) for web, mobile and extension
+  i18n/         Shared translation resources (en, tr) for web and mobile
 docs/
   architecture.md   System overview, modules, data flow
   adr/              Architecture Decision Records (one file per decision)
@@ -43,14 +43,14 @@ Other notes:
    log messages, API error codes, test names. The only non-English text allowed is inside translation files
    (`packages/i18n/locales/<lang>/*.json` for clients, `apps/api/src/main/resources/messages_<lang>.properties` for
    server-rendered texts such as e-mails; `messages.properties` is English).
-2. **No hard-coded user-facing strings** in web, mobile or extension. Every visible string goes through i18n
+2. **No hard-coded user-facing strings** in web or mobile. Every visible string goes through i18n
    (`t('key')`), and every new key is added to **all** supported locales (currently `en` and `tr`) in the same change.
    `en` is the source/fallback locale.
 3. **No secrets or personal data in the repository.** Configuration comes from environment variables; commit only
    `.env.example` files with placeholder values. Never commit real user data, CVs, tokens or platform cookies.
-4. **Respect platform terms.** Platforms are integrated through official APIs where they exist. Where there is no API,
-   the browser extension acts only inside the user's own logged-in session and **never submits anything without an
-   explicit user action** (the user clicks the final send/submit button).
+4. **Respect platform terms.** Platforms are integrated through official APIs where they exist. Platforms without an
+   API are never accessed (no scraping, no browser automation); they are read only from notification e-mails the user
+   forwards. The application **never submits anything to a platform without an explicit user action**.
 5. **Architecture boundaries are enforced by tests** (Spring Modulith verification + ArchUnit). Do not bypass a
    failing boundary test — fix the design or record a new ADR.
 6. Every architectural decision that is hard to reverse gets an ADR in `docs/adr/` (`NNNN-kebab-case-title.md`).
@@ -98,11 +98,11 @@ Other notes:
 - Test class names decide the phase: `*Test` / `*Tests` run in `test` (Surefire, no Docker needed), `*IT` run in
   `integration-test` (Failsafe, Testcontainers).
 
-## Frontend (`apps/web`, `apps/mobile`, `apps/extension`)
+## Frontend (`apps/web`, `apps/mobile`)
 
 - npm workspaces (root `package.json`); shared packages are consumed as TypeScript source (no build step).
 - TypeScript `strict`, Prettier (root `.prettierrc.json`), oxlint (web), ESLint via `expo lint` (mobile).
-  Tests: Vitest (web, extension) and Jest (mobile, Expo default) (planned).
+  Tests: Vitest (web) and Jest (mobile, Expo default) (planned).
 - Server state with TanStack Query; API calls only through `packages/api-client` (`createApiClient`). Never edit
   `openapi.json` or `src/schema.d.ts` by hand.
 - Sessions: `createApiClient` also returns a `session` that keeps the access token in memory, refreshes it before it
@@ -181,6 +181,7 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Lint / type-check / format all clients | `npm run lint` / `npm run typecheck` / `npm run format` |
 | Infrastructure only | `docker compose -f infra/compose.yaml up -d` |
 | Local e-mail inbox (Mailpit) | `http://localhost:8025` |
+| Deliver a forwarded platform e-mail locally (`INBOUND_MAIL_SECRET` set in `apps/api/.env`) | `curl -H "Authorization: Bearer <secret>" -H "X-Envelope-To: <inbox address>" -H "Content-Type: message/rfc822" --data-binary @mail.eml http://localhost:8080/api/v1/inbound-mail` |
 
 CI (`.github/workflows/ci.yml`) runs the API build and the client checks (i18n, format, lint, type-check, web build)
 on every push to `main` and every pull request.

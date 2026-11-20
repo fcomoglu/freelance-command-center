@@ -1,6 +1,6 @@
 # 4. Platform integration: official APIs first, user-driven extension otherwise
 
-- Status: accepted
+- Status: superseded by [ADR 0012](0012-platforms-without-api-via-forwarded-notification-emails.md)
 - Date: 2026-11-19
 
 ## Context

@@ -68,6 +68,9 @@ fcc:
       client-id: ${UPWORK_CLIENT_ID:}
       client-secret: ${UPWORK_CLIENT_SECRET:}
       refresh-token: ${UPWORK_REFRESH_TOKEN:}
+    mail:
+      inbound-domain: ${INBOUND_MAIL_DOMAIN:inbound.localhost}
+      webhook-secret: ${INBOUND_MAIL_SECRET:}
   notification:
     expo:
       access-token: ${EXPO_ACCESS_TOKEN:}

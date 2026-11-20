@@ -7,7 +7,7 @@ The system design as currently agreed. Implementation status is tracked in the [
 - One inbox for freelance work across several platforms: new jobs, messages and platform notifications, with push
   notifications on the phone ([ADR 0011](adr/0011-product-focus-one-inbox.md)).
 - AI assistance (job scoring, proposal drafting, price suggestions) with predictable cost (planned).
-- Web, mobile and browser-extension clients on top of one backend.
+- Web and mobile clients on top of one backend.
 - A codebase that demonstrates production-grade practices: clear module boundaries, tests, CI, documentation.
 
 ## System context
@@ -17,7 +17,7 @@ flowchart LR
     user([Freelancer])
     web[Web app<br/>React]
     mobile[Mobile app<br/>Expo]
-    ext[Browser extension<br/>Chrome MV3]
+    mail[Mail routing service<br/>inbound domain]
     api[API<br/>Spring Boot]
     db[(PostgreSQL)]
     redis[(Redis)]
@@ -25,13 +25,16 @@ flowchart LR
     flapi[Freelancer.com API]
     upapi[Upwork GraphQL API]
     sites[Platforms without API<br/>Fiverr, Bionluk, Arc.dev]
+    mailbox[User's mailbox]
 
-    user --> web & mobile & ext
-    web & mobile & ext -->|REST / JSON| api
+    user --> web & mobile
+    web & mobile -->|REST / JSON| api
     api --> db & redis
     api --> claude
     api --> flapi & upapi
-    ext -->|runs in the user's own session| sites
+    sites -->|notification e-mails| mailbox
+    mailbox -->|forwarding rule| mail
+    mail -->|raw MIME, webhook| api
 ```
 
 ## Platform integration strategy
@@ -40,7 +43,7 @@ flowchart LR
 |---|---|---|
 | Freelancer.com | Official REST API | Server-side job sync with one configured access token; messages and bid status through each user's OAuth 2 connection; bid submission through the API. |
 | Upwork | Official GraphQL API (OAuth 2) | Server-side job sync with the server's own authorized API key; messages and proposal status through each user's OAuth 2 connection. Requires an approved API key. |
-| Fiverr, Bionluk, Arc.dev | Browser extension | Reads pages the user opens/allows inside their own session and sends structured data to the API. Never submits on its own: it pre-fills forms and the user clicks submit. |
+| Fiverr, Bionluk, Arc.dev | Forwarded notification e-mails ([ADR 0012](adr/0012-platforms-without-api-via-forwarded-notification-emails.md)) | Their terms forbid automated access, so the application never touches these sites. The user forwards the platform's notification e-mails to the workspace's inbox address; replies and proposals happen on the platform. |
 
 Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-style-and-platform-patterns.md)):
 
@@ -53,10 +56,8 @@ Patterns in the `platform` module (reasons in [ADR 0010](adr/0010-architecture-s
 - **Decorators** around adapters for rate limiting (Redis token bucket), retries, circuit breaking and OAuth token
   refresh, so adapters contain only platform logic.
 - **Factory** for API clients configured with one connection's credentials.
-- **Inbound port** `IngestCapturedJobs` for data pushed by the browser extension; it enters the same canonical model,
-  so the rest of the system does not know whether a job came from an API or from the extension.
-- **Extension extractors:** the extension parses pages in the browser with one extractor (strategy) per site and sends
-  a versioned JSON schema; page HTML never reaches the server. A site redesign is fixed by an extension release.
+- **Mail parsers** (planned): one parser (strategy) per platform turns a recognized notification e-mail into the same
+  canonical model, so the rest of the system does not know whether a job came from an API or from an e-mail.
 
 ### Job sync
 
@@ -80,6 +81,18 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 - `job` turns each event into a catalog job, unique per platform listing. Only a newer platform update changes a
   job, so repeated events are harmless; a new job publishes `JobPublished`.
 
+### Forwarded platform e-mails
+
+- Each workspace has an inbox address (`/api/v1/mail-inbox`) whose local part is a random secret on the inbound
+  domain (`INBOUND_MAIL_DOMAIN`); it can be replaced, and mail to a replaced address is dropped.
+- A mail routing service receives mail for the inbound domain and posts the raw MIME message to
+  `POST /api/v1/inbound-mail` with the envelope recipient in `X-Envelope-To` and the shared secret
+  (`INBOUND_MAIL_SECRET`) as bearer token. The webhook has its own security filter chain, because the caller is a
+  service, not a user.
+- The sender's domain names the platform. Every mail is stored once per Message-ID with its raw message
+  (`platform.inbound_mails`) and listed for the workspace (`/api/v1/inbound-mails`) as `processed`,
+  `unrecognized` (platform known, no parser for it yet) or `unknown_sender`.
+
 ### New-job notifications
 
 - Each workspace has one **job filter** (`matching`, `/api/v1/job-filter`): keywords and platforms. A job matches
@@ -98,7 +111,7 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 |---|---|
 | `identity` | Users, workspaces, authentication (JWT access + refresh tokens). |
 | `profile` | The freelancer's professional profile, imported read-only from the connected platform accounts; input of AI scoring and proposals (planned). |
-| `platform` | Platform connections (OAuth tokens, extension pairing), per-platform adapters, sync scheduling. The only module that knows platform specifics. |
+| `platform` | Platform connections (OAuth tokens, inbox addresses for forwarded e-mails), per-platform adapters, sync scheduling. The only module that knows platform specifics. |
 | `job` | The job catalog: normalized listings, de-duplication, visibility. Holds no per-user data. |
 | `messaging` | Conversations and messages from the connected platforms, per workspace, with unread state. |
 | `matching` | Per-workspace job filters, rule-based pre-filtering and fit scores; re-scores when the profile or filters change. |
@@ -118,8 +131,8 @@ platform.
   workspace; the indirection lets agencies and teams be added without a schema migration.
 - **Job visibility** depends on the source:
   - Jobs from official APIs are **public**: fetched once into a shared catalog and visible to every workspace.
-  - Jobs captured by the browser extension are **private** to the workspace that captured them; data read in one
-    user's session is never shown to another user.
+  - Jobs read from forwarded e-mails are **private** to the workspace whose inbox received them; data from one
+    user's mail is never shown to another user.
 - Messages, notifications, scores, filters, proposals and AI usage are always per workspace.
 
 ## Authentication
@@ -137,7 +150,7 @@ Owned by the `identity` module; details and reasons in [ADR 0008](adr/0008-authe
   Reusing an already rotated token revokes its whole token family (one family per signed-in device).
 - **Web:** requests from an allowed origin (`fcc.identity.web-origins`) get the refresh token as the `fcc_refresh`
   cookie (`HttpOnly`, `Secure`, `SameSite=Strict`, path `/api/v1/auth`), never in the body; the access token is kept
-  in memory only. Other browser origins are rejected by CORS. **Mobile and extension:** requests without an `Origin`
+  in memory only. Other browser origins are rejected by CORS. **Mobile:** requests without an `Origin`
   get the refresh token in the response body and send it back in the body; mobile stores both tokens with
   `expo-secure-store`.
 - E-mail verification and password reset use single-use, hashed, expiring tokens; requesting a new link invalidates
@@ -176,7 +189,7 @@ Reasons in [ADR 0009](adr/0009-api-contract.md).
 
 ```mermaid
 sequenceDiagram
-    participant S as Scheduler / Extension
+    participant S as Scheduler / Inbound mail
     participant P as platform
     participant J as job
     participant M as matching
@@ -195,7 +208,7 @@ sequenceDiagram
     Note over R: User opens the job and asks for a draft
     R->>A: draft proposal (profile + job)
     A-->>R: draft text + suggested price
-    R->>P: user approves → submit via API, or hand off to the extension to pre-fill
+    R->>P: user approves → submit via API, or open the job on its platform
     P-->>R: ProposalStatusChanged (event) from platform sync
 ```
 
@@ -212,7 +225,7 @@ sequenceDiagram
 ## Internationalization
 
 - UI languages: English (default/fallback) and Turkish; more can be added by adding a locale folder.
-- Shared translation resources in `packages/i18n`, used by web, mobile and extension.
+- Shared translation resources in `packages/i18n`, used by web and mobile.
 - The API is language-neutral: it returns stable error codes; clients translate them. Server-generated text that
   reaches users (e.g. notification emails) uses Spring `MessageSource` with the user's preferred locale.
 - AI-generated proposals are written in the language of the job post unless the user overrides it.
