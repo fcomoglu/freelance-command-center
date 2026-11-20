@@ -218,6 +218,123 @@
         "tags" : [ "Authentication" ]
       }
     },
+    "/api/v1/conversations" : {
+      "get" : {
+        "operationId" : "conversations",
+        "parameters" : [ {
+          "description" : "`nextCursor` of the previous page",
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limit",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseConversation"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The workspace's conversations, newest message first",
+        "tags" : [ "Messages" ]
+      }
+    },
+    "/api/v1/conversations/{conversationId}/messages" : {
+      "get" : {
+        "operationId" : "messages",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "conversationId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "`nextCursor` of the previous page",
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limit",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseMessage"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The messages of a conversation, newest first",
+        "tags" : [ "Messages" ]
+      }
+    },
+    "/api/v1/conversations/{conversationId}/read" : {
+      "post" : {
+        "description" : "Read state is kept by the application; the platform is not told.",
+        "operationId" : "markRead",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "conversationId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mark a conversation as read",
+        "tags" : [ "Messages" ]
+      }
+    },
     "/api/v1/devices" : {
       "post" : {
         "description" : "Registering a known push token again moves it to the caller and returns the same id.",
@@ -510,6 +627,44 @@
   },
   "components" : {
     "schemas" : {
+      "Conversation" : {
+        "type" : "object",
+        "properties" : {
+          "counterpart" : {
+            "type" : "string",
+            "description" : "The other party's name"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "Detail of the newest message: `full` from a platform API, `notice` from a notification e-mail",
+            "enum" : [ "full", "notice" ]
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "lastMessageAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "platform" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          },
+          "preview" : {
+            "type" : "string",
+            "description" : "The start of the newest message on one line; empty when it has no text"
+          },
+          "unreadCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The conversation on its platform; replies are written there"
+          }
+        },
+        "required" : [ "counterpart", "detail", "id", "lastMessageAt", "platform", "preview", "unreadCount", "url" ]
+      },
       "Device" : {
         "type" : "object",
         "properties" : {
@@ -703,6 +858,32 @@
         },
         "required" : [ "email", "emailVerified", "language", "userId", "workspaceId" ]
       },
+      "Message" : {
+        "type" : "object",
+        "properties" : {
+          "body" : {
+            "type" : "string",
+            "description" : "Plain text; may be empty for a notice"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "`notice`: what a notification e-mail showed of the message",
+            "enum" : [ "full", "notice" ]
+          },
+          "direction" : {
+            "type" : "string",
+            "enum" : [ "inbound", "outbound" ]
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "sentAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "body", "detail", "direction", "id", "sentAt" ]
+      },
       "Money" : {
         "type" : "object",
         "properties" : {
@@ -718,6 +899,21 @@
           }
         },
         "required" : [ "amount", "currency" ]
+      },
+      "PageResponseConversation" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Conversation"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "items" ]
       },
       "PageResponseInboundMail" : {
         "type" : "object",
@@ -741,6 +937,21 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Job"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "items" ]
+      },
+      "PageResponseMessage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Message"
             }
           },
           "nextCursor" : {

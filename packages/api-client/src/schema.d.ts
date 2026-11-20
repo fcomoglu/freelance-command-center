@@ -135,6 +135,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The workspace's conversations, newest message first */
+        get: operations["conversations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The messages of a conversation, newest first */
+        get: operations["messages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversationId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a conversation as read
+         * @description Read state is kept by the application; the platform is not told.
+         */
+        post: operations["markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/devices": {
         parameters: {
             query?: never;
@@ -314,6 +368,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Conversation: {
+            /** @description The other party's name */
+            counterpart: string;
+            /**
+             * @description Detail of the newest message: `full` from a platform API, `notice` from a notification e-mail
+             * @enum {string}
+             */
+            detail: "full" | "notice";
+            id: string;
+            /** Format: date-time */
+            lastMessageAt: string;
+            /** @enum {string} */
+            platform: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            /** @description The start of the newest message on one line; empty when it has no text */
+            preview: string;
+            /** Format: int32 */
+            unreadCount: number;
+            /** @description The conversation on its platform; replies are written there */
+            url: string;
+        };
         Device: {
             id: string;
         };
@@ -388,11 +462,29 @@ export interface components {
             userId: string;
             workspaceId: string;
         };
+        Message: {
+            /** @description Plain text; may be empty for a notice */
+            body: string;
+            /**
+             * @description `notice`: what a notification e-mail showed of the message
+             * @enum {string}
+             */
+            detail: "full" | "notice";
+            /** @enum {string} */
+            direction: "inbound" | "outbound";
+            id: string;
+            /** Format: date-time */
+            sentAt: string;
+        };
         Money: {
             /** @example 1250.00 */
             amount: string;
             /** @example USD */
             currency: string;
+        };
+        PageResponseConversation: {
+            items: components["schemas"]["Conversation"][];
+            nextCursor?: string;
         };
         PageResponseInboundMail: {
             items: components["schemas"]["InboundMail"][];
@@ -400,6 +492,10 @@ export interface components {
         };
         PageResponseJob: {
             items: components["schemas"]["Job"][];
+            nextCursor?: string;
+        };
+        PageResponseMessage: {
+            items: components["schemas"]["Message"][];
             nextCursor?: string;
         };
         PasswordResetConfirmation: {
@@ -608,6 +704,76 @@ export interface operations {
         responses: {
             /** @description Accepted */
             202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    conversations: {
+        parameters: {
+            query?: {
+                /** @description `nextCursor` of the previous page */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseConversation"];
+                };
+            };
+        };
+    };
+    messages: {
+        parameters: {
+            query?: {
+                /** @description `nextCursor` of the previous page */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponseMessage"];
+                };
+            };
+        };
+    };
+    markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

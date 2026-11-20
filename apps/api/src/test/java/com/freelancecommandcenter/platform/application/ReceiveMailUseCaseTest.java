@@ -116,7 +116,7 @@ class ReceiveMailUseCaseTest {
     }
 
     private static PlatformMailParser.ParsedMail jobs(String... externalIds) {
-        return new PlatformMailParser.ParsedMail(List.of(externalIds).stream()
+        return PlatformMailParser.ParsedMail.ofJobs(List.of(externalIds).stream()
                 .map(id -> new JobListing(
                         PlatformCode.ARC_DEV,
                         id,

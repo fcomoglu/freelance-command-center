@@ -96,7 +96,8 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
   `unrecognized` (platform known, no parser understands the mail) or `unknown_sender`.
 - The platform's mail parsers read the mail in the same transaction. Each job in it is published as a
   `JobDiscovered` event with the workspace as its owner, so it becomes a private job of that workspace and is matched
-  only against its job filter. A redelivered mail publishes nothing. A parser that fails leaves the mail
+  only against its job filter; each message is published as a `MessageReceived` event for the workspace. A
+  redelivered mail publishes nothing. A parser that fails leaves the mail
   `unrecognized` instead of rejecting it, and the stored raw message can be read again.
 
 ### New-job notifications
@@ -111,6 +112,23 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
   `notification.job_notifications` makes repeated events harmless. Tokens the service reports as unregistered are
   removed; delivery receipts are not read. Push is best effort: a failed push is logged, not retried.
 
+### Messages
+
+Reasons in [ADR 0013](adr/0013-unified-messages-with-two-levels-of-detail.md).
+
+- `platform` delivers every message, from a platform API or a forwarded e-mail, as a `MessageReceived` event in the
+  canonical `PlatformMessage` form. Its level of detail is `full` (API: the whole message) or `notice` (e-mail: what
+  the notification showed, possibly nothing). Reading messages through the Freelancer.com and Upwork APIs needs a
+  connection per workspace (planned).
+- `messaging` keeps one conversation per workspace and platform conversation, and each message once per conversation.
+  The messages of one conversation are applied one after the other under a row lock. The conversation's summary
+  (other party, link, preview, level of detail) follows its newest message.
+- Every new inbound message counts as unread until the conversation is opened in a client
+  (`POST /api/v1/conversations/{id}/read`); the platform's own read state is not used.
+- A new inbound message publishes `MessageArrived`; `notification` pushes it to the workspace's phones like a job
+  alert (log `notification.message_notifications`, Android channel `messages`).
+- Replies are written on the platform: the clients link to the conversation there.
+
 ## Backend modules
 
 | Module | Responsibility |
@@ -119,7 +137,7 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
 | `profile` | The freelancer's professional profile, imported read-only from the connected platform accounts; input of AI scoring and proposals (planned). |
 | `platform` | Platform connections (OAuth tokens, inbox addresses for forwarded e-mails), per-platform adapters, sync scheduling. The only module that knows platform specifics. |
 | `job` | The job catalog: normalized listings, de-duplication, visibility. Holds no per-user data. |
-| `messaging` | Conversations and messages from the connected platforms, per workspace, with unread state. |
+| `messaging` | The inbox: conversations and messages from every platform, per workspace, with unread state. |
 | `matching` | Per-workspace job filters, rule-based pre-filtering and fit scores; re-scores when the profile or filters change. |
 | `proposal` | Proposal drafts, approval workflow, submission and outcome tracking (submitted → viewed → shortlisted → won / lost). |
 | `ai` | Claude integration: scoring, drafting, pricing. Prompt templates, caching strategy, usage/cost tracking per workspace. |

@@ -2,6 +2,7 @@ package com.freelancecommandcenter.notification.adapter.out.persistence;
 
 import com.freelancecommandcenter.notification.application.port.out.DeviceRepository;
 import com.freelancecommandcenter.notification.application.port.out.JobNotificationLog;
+import com.freelancecommandcenter.notification.application.port.out.MessageNotificationLog;
 import com.freelancecommandcenter.notification.domain.Device;
 import com.freelancecommandcenter.shared.i18n.Language;
 import com.freelancecommandcenter.shared.id.JobId;
@@ -18,9 +19,9 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-/** Devices and the notification log in the {@code notification} schema; plain SQL, since both are simple rows. */
+/** Devices and the notification logs in the {@code notification} schema; plain SQL, since all are simple rows. */
 @Component
-class NotificationPersistenceAdapter implements DeviceRepository, JobNotificationLog {
+class NotificationPersistenceAdapter implements DeviceRepository, JobNotificationLog, MessageNotificationLog {
 
     private final JdbcClient jdbc;
     private final Clock clock;
@@ -86,6 +87,18 @@ class NotificationPersistenceAdapter implements DeviceRepository, JobNotificatio
                                 ON CONFLICT DO NOTHING
                                 """)
                         .params(workspaceId.value(), jobId.value(), Timestamp.from(at))
+                        .update()
+                == 1;
+    }
+
+    @Override
+    public boolean recordFirst(WorkspaceId workspaceId, UUID messageId, Instant at) {
+        return jdbc.sql("""
+                                INSERT INTO notification.message_notifications (workspace_id, message_id, notified_at)
+                                VALUES (?, ?, ?)
+                                ON CONFLICT DO NOTHING
+                                """)
+                        .params(workspaceId.value(), messageId, Timestamp.from(at))
                         .update()
                 == 1;
     }

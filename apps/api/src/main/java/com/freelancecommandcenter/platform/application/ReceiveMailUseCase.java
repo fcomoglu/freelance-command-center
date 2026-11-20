@@ -1,6 +1,7 @@
 package com.freelancecommandcenter.platform.application;
 
 import com.freelancecommandcenter.platform.api.JobDiscovered;
+import com.freelancecommandcenter.platform.api.MessageReceived;
 import com.freelancecommandcenter.platform.application.port.out.InboundMailStore;
 import com.freelancecommandcenter.platform.application.port.out.MailInboxRepository;
 import com.freelancecommandcenter.platform.application.port.out.MailReader;
@@ -28,7 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Accepts a forwarded e-mail for a workspace inbox (ADR 0012): identifies the platform by the sender, reads the mail
- * with that platform's parsers and stores the raw message. Jobs in the mail are published as private to the workspace.
+ * with that platform's parsers and stores the raw message. Jobs and messages in the mail are published as private to
+ * the workspace.
  * Re-delivered mails (same Message-ID) are stored and read once.
  */
 @Service
@@ -99,8 +101,10 @@ public class ReceiveMailUseCase {
         if (!mails.save(mail, raw)) {
             return Outcome.DUPLICATE;
         }
-        parsed.ifPresent(content ->
-                content.jobs().forEach(listing -> events.publishEvent(new JobDiscovered(listing, workspace))));
+        parsed.ifPresent(content -> {
+            content.jobs().forEach(listing -> events.publishEvent(new JobDiscovered(listing, workspace)));
+            content.messages().forEach(item -> events.publishEvent(new MessageReceived(item, workspace)));
+        });
         return Outcome.STORED;
     }
 

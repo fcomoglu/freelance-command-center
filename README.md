@@ -11,7 +11,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
 | **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Arc.dev and Bionluk (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails whose jobs stay private to your workspace; parsers for the Arc.dev and Bionluk e-mails next) |
-| **Unified messages:** conversations from every platform in one list, with unread state and push notifications | planned |
+| **Unified messages:** conversations from every platform in one list, with unread state and push notifications; replies are written on the platform | in progress (inbox on web and mobile with push notifications, filled from forwarded e-mails; Freelancer.com and Upwork through account connections next) |
 | **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
 | **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |
