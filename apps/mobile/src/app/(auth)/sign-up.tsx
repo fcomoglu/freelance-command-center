@@ -54,6 +54,8 @@ export default function SignUpScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
         autoComplete="new-password"
         textContentType="newPassword"
         maxLength={128}
