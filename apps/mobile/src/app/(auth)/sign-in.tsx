@@ -35,6 +35,8 @@ export default function SignInScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
         autoComplete="current-password"
         textContentType="password"
         error={error?.fields.password}

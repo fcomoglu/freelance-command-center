@@ -33,17 +33,17 @@ export function createApiClient({
 }: ApiClientOptions) {
   const session = new Session(createFetchClient<paths>({ baseUrl }), refreshTokenStore, runExclusive);
   const fetchClient = createFetchClient<paths>({ baseUrl });
+  // The middlewares return nothing: returning the same object makes openapi-fetch check it with `instanceof
+  // Request/Response`, which fails in React Native, where fetch returns objects of a different class.
   fetchClient.use({
     async onRequest({ request }) {
-      if (isAuthRequest(request)) return request;
+      if (isAuthRequest(request)) return;
       const token = await session.getAccessToken();
       if (token) request.headers.set('Authorization', `Bearer ${token}`);
-      return request;
     },
     async onResponse({ request, response }) {
       // Auth endpoints answer 401 for wrong passwords and spent links; only a rejected access token ends the session.
       if (response.status === 401 && !isAuthRequest(request)) await session.handleUnauthorized();
-      return response;
     },
   });
   return { fetchClient, query: createQueryClient(fetchClient), session };

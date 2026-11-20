@@ -33,11 +33,12 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AnimatedSplashOverlay />
+        {/* Explicit targets: the default fallback is the group itself, and (auth) has no index screen. */}
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Protected guard={signedIn}>
+          <Stack.Protected guard={signedIn} redirectTo="/sign-in">
             <Stack.Screen name="(app)" />
           </Stack.Protected>
-          <Stack.Protected guard={!signedIn}>
+          <Stack.Protected guard={!signedIn} redirectTo="/">
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
         </Stack>
