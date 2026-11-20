@@ -11,7 +11,7 @@ your phone and in your browser. AI job scoring and proposal drafts come next.
 |---|---|
 | **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
 | **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Arc.dev and Bionluk (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails whose jobs stay private to your workspace; parsers for the Arc.dev and Bionluk e-mails next) |
-| **Unified messages:** conversations from every platform in one list, with unread state and push notifications; replies are written on the platform | in progress (inbox on web and mobile with push notifications, filled from forwarded e-mails and from connected Freelancer.com accounts; Upwork account connections next) |
+| **Unified messages:** conversations from every platform in one list, with unread state and push notifications; replies are written on the platform | in progress (inbox on web and mobile with push notifications, filled from forwarded e-mails and from connected Freelancer.com and Upwork accounts; not yet tried against the live platforms, whose OAuth apps await approval) |
 | **Bid and platform notifications:** bid status changes and platform notices in one feed | planned |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
 | **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |
@@ -64,6 +64,10 @@ an OAuth app, reviewed by Freelancer.com before it works:
 2. Once it is approved, set `FREELANCER_CLIENT_ID` and `FREELANCER_CLIENT_SECRET`, and `PLATFORM_TOKEN_KEY` to 32
    random bytes in base64 (`openssl rand -base64 32`), which encrypts the stored tokens. Keep the key: tokens stored
    under another key cannot be read, and every account must be connected again.
+
+Upwork accounts are connected the same way with the Upwork API key: give the key the permissions "Messaging -
+Read-Only Access" and "Common Entities - Read-Only Access" and the callback URL
+`<web address>/connections/upwork/callback`, then set `UPWORK_ACCOUNT_CONNECTIONS=true` (and `PLATFORM_TOKEN_KEY`).
 
 The mobile app calls `http://localhost:8080` (Android emulator: `http://10.0.2.2:8080`). On a physical device, set
 `EXPO_PUBLIC_API_URL` to your computer's LAN address, e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.20:8080`.

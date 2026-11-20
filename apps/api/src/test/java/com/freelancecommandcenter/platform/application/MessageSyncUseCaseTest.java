@@ -71,13 +71,26 @@ class MessageSyncUseCaseTest {
 
     @Test
     void renewsTokensThatExpireSoonBeforeReading() {
-        PlatformConnection connection = connect(NOW.plus(Duration.ofHours(2)));
+        PlatformConnection connection = connect(NOW.plus(Duration.ofMinutes(5)));
 
         messageSync.syncAll();
 
         assertThat(connection.tokens().accessToken()).isEqualTo("access-2");
         assertThat(source.requestedWith).isEqualTo("access-2");
         assertThat(connections.updates).isEqualTo(2);
+    }
+
+    @Test
+    void aRejectedAccessTokenIsRenewedOnceBeforeGivingUp() {
+        PlatformConnection connection = connect(NOW.plus(Duration.ofDays(30)));
+        source.rejectedTokens.add("access-1");
+        source.result = List.of(message("1", NOW.minusSeconds(60)));
+
+        messageSync.syncAll();
+
+        assertThat(connection.status()).isEqualTo(PlatformConnection.Status.ACTIVE);
+        assertThat(source.requestedWith).isEqualTo("access-2");
+        assertThat(events).hasSize(1);
     }
 
     @Test
@@ -154,6 +167,7 @@ class MessageSyncUseCaseTest {
 
         List<PlatformMessage> result = List.of();
         RuntimeException failure;
+        final List<String> rejectedTokens = new ArrayList<>();
         Instant requestedSince;
         String requestedWith;
 
@@ -168,6 +182,9 @@ class MessageSyncUseCaseTest {
             requestedWith = accessToken;
             if (failure != null) {
                 throw failure;
+            }
+            if (rejectedTokens.contains(accessToken)) {
+                throw new ConnectionRejectedException(PlatformCode.FREELANCER, "revoked", null);
             }
             return result;
         }

@@ -127,12 +127,17 @@ class UpworkAccessTokensTest {
         UpworkProperties properties = new UpworkProperties(
                 URI.create(API),
                 URI.create(TOKEN_URL),
+                URI.create("https://www.upwork.com/ab/account-security/oauth2/authorize"),
                 URI.create("https://www.upwork.com"),
                 "client-id",
                 "client-secret",
                 configuredRefreshToken,
+                false,
                 50,
                 4,
+                20,
+                3,
+                100,
                 Duration.ofSeconds(10),
                 Duration.ofSeconds(30));
         return new UpworkAccessTokens(

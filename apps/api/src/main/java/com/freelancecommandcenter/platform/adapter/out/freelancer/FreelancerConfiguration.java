@@ -1,9 +1,11 @@
 package com.freelancecommandcenter.platform.adapter.out.freelancer;
 
+import com.freelancecommandcenter.platform.adapter.out.oauth.OAuthTokenClient;
 import com.freelancecommandcenter.platform.application.port.out.AccountConnector;
 import com.freelancecommandcenter.platform.application.port.out.JobSource;
 import com.freelancecommandcenter.platform.application.port.out.MessageSource;
 import com.freelancecommandcenter.shared.http.HttpClients;
+import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.net.URI;
 import java.time.Clock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -39,12 +41,17 @@ class FreelancerConfiguration {
     @Bean
     @ConditionalOnExpression(OAUTH_APP_CONFIGURED)
     AccountConnector freelancerAccountConnector(FreelancerProperties properties, JsonMapper json, Clock clock) {
-        return new FreelancerAccountConnector(
-                client(properties, properties.accountsUrl()).build(),
-                client(properties, properties.baseUrl()).build(),
-                properties,
+        OAuthTokenClient tokens = new OAuthTokenClient(
+                PlatformCode.FREELANCER,
+                client(properties, properties.accountsUrl().resolve(FreelancerAccountConnector.TOKEN_PATH))
+                        .build(),
+                properties.clientId(),
+                properties.clientSecret(),
+                FreelancerAccountConnector.DEFAULT_EXPIRES_IN_SECONDS,
                 json,
                 clock);
+        return new FreelancerAccountConnector(
+                tokens, client(properties, properties.baseUrl()).build(), properties, json);
     }
 
     @Bean

@@ -28,8 +28,11 @@ public class MessageSyncUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(MessageSyncUseCase.class);
 
-    /** Renew this long before expiry, so a token never runs out between two reads. */
-    static final Duration TOKEN_RENEWAL_MARGIN = Duration.ofDays(1);
+    /**
+     * Renew this long before expiry, so a token never runs out between two reads; short enough for access tokens that
+     * live only a day (Upwork).
+     */
+    static final Duration TOKEN_RENEWAL_MARGIN = Duration.ofMinutes(10);
 
     private final PlatformRegistry platforms;
     private final PlatformConnectionRepository connections;
@@ -82,12 +85,7 @@ public class MessageSyncUseCase {
      * @return the number of messages read
      */
     int sync(PlatformConnection connection, MessageSource source, AccountConnector connector) {
-        if (connection.tokens().expiresWithin(TOKEN_RENEWAL_MARGIN, clock.instant())) {
-            connection.renewTokens(connector.refresh(connection.tokens()));
-            connections.update(connection);
-        }
-        List<PlatformMessage> messages = source.fetchSince(
-                connection.accountId(), connection.tokens().accessToken(), connection.messagesFrom(initialLookback));
+        List<PlatformMessage> messages = fetchWithCurrentTokens(connection, source, connector);
         transaction.executeWithoutResult(status -> {
             messages.forEach(message -> events.publishEvent(new MessageReceived(message, connection.workspaceId())));
             connection.recordMessagesRead(
@@ -95,5 +93,37 @@ public class MessageSyncUseCase {
             connections.update(connection);
         });
         return messages.size();
+    }
+
+    /**
+     * Renews tokens that are about to expire before reading; a platform can also drop an access token early while
+     * the refresh token still works, so a rejected read is retried once with renewed tokens.
+     */
+    private List<PlatformMessage> fetchWithCurrentTokens(
+            PlatformConnection connection, MessageSource source, AccountConnector connector) {
+        boolean renewed = false;
+        if (connection.tokens().expiresWithin(TOKEN_RENEWAL_MARGIN, clock.instant())) {
+            renew(connection, connector);
+            renewed = true;
+        }
+        try {
+            return fetch(connection, source);
+        } catch (ConnectionRejectedException rejected) {
+            if (renewed) {
+                throw rejected;
+            }
+            renew(connection, connector);
+            return fetch(connection, source);
+        }
+    }
+
+    private void renew(PlatformConnection connection, AccountConnector connector) {
+        connection.renewTokens(connector.refresh(connection.tokens()));
+        connections.update(connection);
+    }
+
+    private List<PlatformMessage> fetch(PlatformConnection connection, MessageSource source) {
+        return source.fetchSince(
+                connection.accountId(), connection.tokens().accessToken(), connection.messagesFrom(initialLookback));
     }
 }

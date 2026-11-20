@@ -27,7 +27,7 @@ single user. Neither platform offers push delivery of new messages to the applic
   (`PLATFORM_TOKEN_KEY`), so a database dump or backup alone does not give access to anyone's platform account. The
   API refuses to start with a configured OAuth app but no key. Tokens never appear in logs or API responses.
 - **Messages are polled.** A scheduled read (every 2 minutes by default) asks each active connection for messages
-  since the newest one read, renews tokens a day before they expire, and publishes the messages as `MessageReceived`
+  since the newest one read, renews tokens shortly before they expire, and publishes the messages as `MessageReceived`
   with full detail. A connection whose tokens the platform refuses is marked `reconnect_required` and no longer read
   until the user connects again.
 - Each platform implements the flow as an `AccountConnector` and the read as a `MessageSource` (ADR 0010); a platform

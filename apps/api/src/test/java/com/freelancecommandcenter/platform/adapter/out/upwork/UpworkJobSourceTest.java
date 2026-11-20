@@ -127,7 +127,7 @@ class UpworkJobSourceTest {
                 builder.build(),
                 new UpworkJobTranslator(URI.create("https://www.upwork.com")),
                 JsonMapper.builder().build(),
-                UpworkConfiguration.jobSearchQuery(),
+                UpworkConfiguration.query(UpworkConfiguration.JOB_SEARCH_QUERY),
                 50,
                 maxPages);
     }

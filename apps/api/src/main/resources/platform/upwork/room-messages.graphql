@@ -1,0 +1,34 @@
+query roomMessages($filter: RoomFilter, $pagination: Pagination, $stories: StoryFilter) {
+  roomList(filter: $filter, pagination: $pagination, sortOrder: DESC) {
+    edges {
+      node {
+        id
+        roomName
+        topic
+        roomUsers {
+          user {
+            id
+            name
+          }
+        }
+        stories(filter: $stories) {
+          edges {
+            node {
+              id
+              createdDateTime
+              message
+              user {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+}

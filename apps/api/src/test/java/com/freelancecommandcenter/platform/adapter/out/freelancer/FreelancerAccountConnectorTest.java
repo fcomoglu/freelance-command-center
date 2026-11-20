@@ -10,9 +10,11 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import com.freelancecommandcenter.platform.adapter.out.oauth.OAuthTokenClient;
 import com.freelancecommandcenter.platform.application.port.out.ConnectionRejectedException;
 import com.freelancecommandcenter.platform.domain.ConnectedAccount;
 import com.freelancecommandcenter.platform.domain.OAuthTokens;
+import com.freelancecommandcenter.shared.platform.PlatformCode;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -38,14 +40,22 @@ class FreelancerAccountConnectorTest {
     private static final URI REDIRECT = URI.create("http://localhost:5173/connections/freelancer/callback");
     private static final Instant NOW = Instant.parse("2026-11-20T10:00:00Z");
 
-    private final RestClient.Builder accountsBuilder = RestClient.builder().baseUrl(ACCOUNTS);
+    private final RestClient.Builder accountsBuilder =
+            RestClient.builder().baseUrl(ACCOUNTS + FreelancerAccountConnector.TOKEN_PATH);
     private final RestClient.Builder apiBuilder = RestClient.builder().baseUrl(SITE);
     private final MockRestServiceServer accounts =
             MockRestServiceServer.bindTo(accountsBuilder).build();
     private final MockRestServiceServer api =
             MockRestServiceServer.bindTo(apiBuilder).build();
     private final FreelancerAccountConnector connector = new FreelancerAccountConnector(
-            accountsBuilder.build(),
+            new OAuthTokenClient(
+                    PlatformCode.FREELANCER,
+                    accountsBuilder.build(),
+                    "client-1",
+                    "client-secret",
+                    FreelancerAccountConnector.DEFAULT_EXPIRES_IN_SECONDS,
+                    JsonMapper.builder().build(),
+                    Clock.fixed(NOW, ZoneOffset.UTC)),
             apiBuilder.build(),
             new FreelancerProperties(
                     URI.create(SITE),
@@ -60,8 +70,7 @@ class FreelancerAccountConnectorTest {
                     5,
                     Duration.ofSeconds(10),
                     Duration.ofSeconds(30)),
-            JsonMapper.builder().build(),
-            Clock.fixed(NOW, ZoneOffset.UTC));
+            JsonMapper.builder().build());
 
     @Test
     void theConsentPageAsksForMessagingAndCarriesTheState() {

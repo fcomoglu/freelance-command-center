@@ -1,0 +1,65 @@
+{
+  "data": {
+    "roomList": {
+      "edges": [
+        {
+          "node": {
+            "id": "room_made_up_1",
+            "roomName": "Grace H., Ada L.",
+            "topic": "Spring Boot API",
+            "roomUsers": [
+              { "user": { "id": "1001", "name": "Ada L." } },
+              { "user": { "id": "2002", "name": "Grace H." } }
+            ],
+            "stories": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "story-1",
+                    "createdDateTime": "2026-11-20T09:00:00Z",
+                    "message": "Could you start on Monday?\n",
+                    "user": { "id": "2002", "name": "Grace H." }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "story-2",
+                    "createdDateTime": "1795165500000",
+                    "message": "Yes, I can.",
+                    "user": { "id": "1001", "name": "Ada L." }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "story-3",
+                    "createdDateTime": "2026-11-20T09:06:00Z",
+                    "message": "Contract started",
+                    "user": null
+                  }
+                },
+                {
+                  "node": {
+                    "id": "story-0",
+                    "createdDateTime": "2026-11-19T09:00:00Z",
+                    "message": "Before the read position",
+                    "user": { "id": "2002", "name": "Grace H." }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "room_made_up_2",
+            "roomName": "Project kickoff",
+            "topic": null,
+            "roomUsers": [{ "user": { "id": "1001", "name": "Ada L." } }],
+            "stories": { "edges": [] }
+          }
+        }
+      ],
+      "pageInfo": { "endCursor": "20", "hasNextPage": false }
+    }
+  }
+}

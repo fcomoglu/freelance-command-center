@@ -102,7 +102,7 @@ class UpworkJobTranslator {
     }
 
     /** ISO 8601 with an offset, or epoch milliseconds as a string or number. */
-    private static Optional<Instant> instant(JsonNode node) {
+    static Optional<Instant> instant(JsonNode node) {
         if (node.isNumber()) {
             return Optional.of(Instant.ofEpochMilli(node.longValue()));
         }
