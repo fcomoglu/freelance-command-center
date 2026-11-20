@@ -34,13 +34,14 @@ class JobSyncUseCaseTest {
     private final List<Object> events = new ArrayList<>();
     private final StubSource source = new StubSource();
     private final JobSyncUseCase jobSync = new JobSyncUseCase(
-            new PlatformRegistry(List.of(source), List.of()),
+            new PlatformRegistry(List.of(source), List.of(), List.of(), List.of()),
             store,
             events::add,
             new TransactionTemplate(new NoTransactionManager()),
             new PlatformProperties(
                     new PlatformProperties.JobSync(true, Duration.ofMinutes(5), Duration.ZERO, Duration.ofHours(1)),
-                    new PlatformProperties.Mail("inbound.localhost", "", DataSize.ofMegabytes(5))),
+                    new PlatformProperties.Mail("inbound.localhost", "", DataSize.ofMegabytes(5)),
+                    TestProperties.connections()),
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test

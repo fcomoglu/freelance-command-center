@@ -623,10 +623,146 @@
         "summary" : "Send a new verification e-mail",
         "tags" : [ "Account" ]
       }
+    },
+    "/api/v1/platform-connections" : {
+      "get" : {
+        "description" : "Only platforms whose OAuth app is configured on the server are listed; there is one page.",
+        "operationId" : "list",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponsePlatformConnection"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "The platforms whose accounts can be connected, with the workspace's connections",
+        "tags" : [ "Platform connections" ]
+      }
+    },
+    "/api/v1/platform-connections/{platform}" : {
+      "delete" : {
+        "description" : "Its tokens are deleted; conversations read so far stay in the inbox.",
+        "operationId" : "disconnect",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "platform",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Disconnect an account",
+        "tags" : [ "Platform connections" ]
+      },
+      "post" : {
+        "description" : "Replaces the workspace's previous connection to the platform.",
+        "operationId" : "connect",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "platform",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConnectPlatformRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformConnection"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Complete connecting an account",
+        "tags" : [ "Platform connections" ]
+      }
+    },
+    "/api/v1/platform-connections/{platform}/authorizations" : {
+      "post" : {
+        "description" : "Send the user to `authorizationUrl`. The platform returns them to the web client at `/connections/{platform}/callback` with `code` and `state`, which complete the connection.",
+        "operationId" : "authorize",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "platform",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformAuthorization"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Start connecting an account",
+        "tags" : [ "Platform connections" ]
+      }
     }
   },
   "components" : {
     "schemas" : {
+      "ConnectPlatformRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "description" : "`code` from the callback",
+            "minLength" : 1
+          },
+          "state" : {
+            "type" : "string",
+            "description" : "`state` from the callback",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "code", "state" ]
+      },
       "Conversation" : {
         "type" : "object",
         "properties" : {
@@ -960,6 +1096,21 @@
         },
         "required" : [ "items" ]
       },
+      "PageResponsePlatformConnection" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlatformConnection"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "items" ]
+      },
       "PasswordResetConfirmation" : {
         "type" : "object",
         "properties" : {
@@ -986,6 +1137,39 @@
           }
         },
         "required" : [ "email" ]
+      },
+      "PlatformAuthorization" : {
+        "type" : "object",
+        "properties" : {
+          "authorizationUrl" : {
+            "type" : "string",
+            "description" : "The platform's consent page"
+          }
+        },
+        "required" : [ "authorizationUrl" ]
+      },
+      "PlatformConnection" : {
+        "type" : "object",
+        "properties" : {
+          "accountName" : {
+            "type" : "string",
+            "description" : "The account's name on the platform; absent when not connected"
+          },
+          "connectedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "platform" : {
+            "type" : "string",
+            "enum" : [ "freelancer", "upwork", "fiverr", "bionluk", "arc_dev" ]
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "`reconnect_required`: the platform no longer accepts the authorization",
+            "enum" : [ "not_connected", "active", "reconnect_required" ]
+          }
+        },
+        "required" : [ "platform", "status" ]
       },
       "RefreshRequest" : {
         "type" : "object",

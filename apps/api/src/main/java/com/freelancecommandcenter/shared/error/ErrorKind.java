@@ -7,5 +7,7 @@ public enum ErrorKind {
     FORBIDDEN,
     NOT_FOUND,
     CONFLICT,
-    TOO_MANY_REQUESTS
+    TOO_MANY_REQUESTS,
+    /** A platform or other service the request depends on cannot be reached. */
+    UNAVAILABLE
 }

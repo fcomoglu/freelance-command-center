@@ -1,5 +1,6 @@
 package com.freelancecommandcenter.platform.application;
 
+import java.net.URI;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -10,10 +11,13 @@ import org.springframework.util.unit.DataSize;
  *
  * @param jobSync the periodic job sync of platforms that offer a job API
  * @param mail the inbound mail of platforms read through forwarded notification e-mails
+ * @param connections the platform accounts workspaces connect through OAuth
  */
 @ConfigurationProperties("fcc.platform")
 public record PlatformProperties(
-        @DefaultValue JobSync jobSync, @DefaultValue Mail mail) {
+        @DefaultValue JobSync jobSync,
+        @DefaultValue Mail mail,
+        @DefaultValue Connections connections) {
 
     /**
      * @param enabled whether the sync runs on a schedule
@@ -37,4 +41,29 @@ public record PlatformProperties(
             @DefaultValue("inbound.localhost") String inboundDomain,
             @DefaultValue("") String webhookSecret,
             @DefaultValue("5MB") DataSize maxSize) {}
+
+    /**
+     * @param redirectBaseUrl the web client's address; the platforms send users back to
+     *     {@code <redirectBaseUrl>/connections/<platform>/callback}, which must be registered with each platform's OAuth
+     *     app
+     * @param tokenKey base64 AES-256 key the stored tokens are encrypted with; required once a platform's OAuth app is
+     *     configured; tokens stored under another key cannot be read
+     * @param messageSync the periodic message read of connected accounts
+     */
+    public record Connections(
+            @DefaultValue("http://localhost:5173") URI redirectBaseUrl,
+            @DefaultValue("") String tokenKey,
+            @DefaultValue MessageSync messageSync) {}
+
+    /**
+     * @param enabled whether the read runs on a schedule
+     * @param interval pause between the end of one read and the start of the next
+     * @param initialDelay pause after application start before the first read
+     * @param initialLookback how far back the first read of a new connection goes
+     */
+    public record MessageSync(
+            @DefaultValue("true") boolean enabled,
+            @DefaultValue("2m") Duration interval,
+            @DefaultValue("45s") Duration initialDelay,
+            @DefaultValue("7d") Duration initialLookback) {}
 }

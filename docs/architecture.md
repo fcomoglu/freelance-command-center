@@ -112,14 +112,32 @@ Platforms with a job API are polled by the `platform` module (`JobSyncUseCase`, 
   `notification.job_notifications` makes repeated events harmless. Tokens the service reports as unregistered are
   removed; delivery receipts are not read. Push is best effort: a failed push is logged, not retried.
 
+### Platform account connections
+
+Reasons in [ADR 0014](adr/0014-platform-account-connections.md).
+
+- A workspace connects at most one account per platform with the OAuth 2 authorization code flow:
+  `POST /api/v1/platform-connections/{platform}/authorizations` returns the consent page with a single-use `state`
+  (15 minutes, bound to the workspace); the platform returns the user to the web client at
+  `/connections/{platform}/callback` (`fcc.platform.connections.redirect-base-url`), which posts `code` and
+  `state` to `POST /api/v1/platform-connections/{platform}`. `DELETE` on the same path deletes the tokens.
+- Only platforms whose OAuth app is configured are connectable (Freelancer.com: `FREELANCER_CLIENT_ID`,
+  `FREELANCER_CLIENT_SECRET`, advanced scope `fln:messaging`).
+- Tokens are stored in `platform.connections` encrypted with AES-256-GCM under `PLATFORM_TOKEN_KEY`; the API does not
+  start with a configured OAuth app and no key.
+- `MessageSyncUseCase` reads every active connection every 2 minutes (`fcc.platform.connections.message-sync.*`):
+  tokens are renewed a day before they expire, the read starts at the newest message read (a new connection looks
+  back 7 days), and the messages are published as `MessageReceived` with the new read position in one transaction.
+  A connection whose tokens are refused becomes `reconnect_required` and is skipped until connected again.
+
 ### Messages
 
 Reasons in [ADR 0013](adr/0013-unified-messages-with-two-levels-of-detail.md).
 
 - `platform` delivers every message, from a platform API or a forwarded e-mail, as a `MessageReceived` event in the
   canonical `PlatformMessage` form. Its level of detail is `full` (API: the whole message) or `notice` (e-mail: what
-  the notification showed, possibly nothing). Reading messages through the Freelancer.com and Upwork APIs needs a
-  connection per workspace (planned).
+  the notification showed, possibly nothing). Messages from the Freelancer.com API come through the workspace's
+  [account connection](#platform-account-connections); Upwork's follow the same way (planned).
 - `messaging` keeps one conversation per workspace and platform conversation, and each message once per conversation.
   The messages of one conversation are applied one after the other under a row lock. The conversation's summary
   (other party, link, preview, level of detail) follows its newest message.

@@ -91,12 +91,13 @@ class ReceiveMailUseCaseTest {
                 new SingleInbox(),
                 new InMemoryMails(),
                 raw -> message,
-                new PlatformRegistry(List.of(), List.of(parsers)),
+                new PlatformRegistry(List.of(), List.of(parsers), List.of(), List.of()),
                 events::add,
                 new PlatformProperties(
                         new PlatformProperties.JobSync(
                                 false, Duration.ofMinutes(5), Duration.ZERO, Duration.ofHours(1)),
-                        new PlatformProperties.Mail("inbound.localhost", "", DataSize.ofMegabytes(5))),
+                        new PlatformProperties.Mail("inbound.localhost", "", DataSize.ofMegabytes(5)),
+                        TestProperties.connections()),
                 Clock.fixed(NOW, ZoneOffset.UTC));
     }
 

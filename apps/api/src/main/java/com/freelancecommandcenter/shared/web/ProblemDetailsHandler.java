@@ -34,7 +34,8 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
             ErrorKind.FORBIDDEN, HttpStatus.FORBIDDEN,
             ErrorKind.NOT_FOUND, HttpStatus.NOT_FOUND,
             ErrorKind.CONFLICT, HttpStatus.CONFLICT,
-            ErrorKind.TOO_MANY_REQUESTS, HttpStatus.TOO_MANY_REQUESTS);
+            ErrorKind.TOO_MANY_REQUESTS, HttpStatus.TOO_MANY_REQUESTS,
+            ErrorKind.UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
 
     @ExceptionHandler(DomainException.class)
     ResponseEntity<ProblemDetail> handleDomain(DomainException exception) {

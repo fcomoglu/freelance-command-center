@@ -64,6 +64,8 @@ fcc:
   platform:
     freelancer:
       access-token: ${FREELANCER_ACCESS_TOKEN:}
+      client-id: ${FREELANCER_CLIENT_ID:}
+      client-secret: ${FREELANCER_CLIENT_SECRET:}
     upwork:
       client-id: ${UPWORK_CLIENT_ID:}
       client-secret: ${UPWORK_CLIENT_SECRET:}
@@ -71,6 +73,9 @@ fcc:
     mail:
       inbound-domain: ${INBOUND_MAIL_DOMAIN:inbound.localhost}
       webhook-secret: ${INBOUND_MAIL_SECRET:}
+    connections:
+      redirect-base-url: ${fcc.identity.web-base-url}
+      token-key: ${PLATFORM_TOKEN_KEY:}
   notification:
     expo:
       access-token: ${EXPO_ACCESS_TOKEN:}

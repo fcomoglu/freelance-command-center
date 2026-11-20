@@ -1,0 +1,49 @@
+{
+  "status": "success",
+  "request_id": "made-up-request",
+  "result": {
+    "messages": [
+      {
+        "id": 9001,
+        "from_user": 2002,
+        "thread_id": 501,
+        "time_created": 1795600000,
+        "message": "Hi, can you start on Monday?\n",
+        "message_source": "default_msg",
+        "attachments": []
+      },
+      {
+        "id": 9002,
+        "from_user": 1001,
+        "thread_id": 501,
+        "time_created": 1795600300,
+        "message": "Yes, I can.",
+        "message_source": "default_msg",
+        "attachments": []
+      },
+      {
+        "id": 9003,
+        "from_user": 2002,
+        "time_created": 1795600400,
+        "message": "Without a thread"
+      }
+    ],
+    "threads": {
+      "501": {
+        "id": 501,
+        "thread": {
+          "id": 501,
+          "thread_type": "private_chat",
+          "members": [1001, 2002],
+          "owner": 2002,
+          "context": { "id": 39001001, "type": "project" }
+        },
+        "is_read": false
+      }
+    },
+    "users": {
+      "2002": { "id": 2002, "username": "grace_h", "public_name": "Grace H." }
+    },
+    "unfiltered_count": 3
+  }
+}

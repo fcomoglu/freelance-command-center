@@ -22,6 +22,16 @@ class TestSupportConfiguration {
     }
 
     @Bean
+    FakeAccountConnector fakeAccountConnector() {
+        return new FakeAccountConnector();
+    }
+
+    @Bean
+    FakeMessageSource fakeMessageSource() {
+        return new FakeMessageSource();
+    }
+
+    @Bean
     FakeMailParser fakeMailParser() {
         return new FakeMailParser();
     }

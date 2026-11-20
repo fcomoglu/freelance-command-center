@@ -364,10 +364,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/platform-connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The platforms whose accounts can be connected, with the workspace's connections
+         * @description Only platforms whose OAuth app is configured on the server are listed; there is one page.
+         */
+        get: operations["list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform-connections/{platform}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete connecting an account
+         * @description Replaces the workspace's previous connection to the platform.
+         */
+        post: operations["connect"];
+        /**
+         * Disconnect an account
+         * @description Its tokens are deleted; conversations read so far stay in the inbox.
+         */
+        delete: operations["disconnect"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform-connections/{platform}/authorizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start connecting an account
+         * @description Send the user to `authorizationUrl`. The platform returns them to the web client at `/connections/{platform}/callback` with `code` and `state`, which complete the connection.
+         */
+        post: operations["authorize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ConnectPlatformRequest: {
+            /** @description `code` from the callback */
+            code: string;
+            /** @description `state` from the callback */
+            state: string;
+        };
         Conversation: {
             /** @description The other party's name */
             counterpart: string;
@@ -498,12 +568,33 @@ export interface components {
             items: components["schemas"]["Message"][];
             nextCursor?: string;
         };
+        PageResponsePlatformConnection: {
+            items: components["schemas"]["PlatformConnection"][];
+            nextCursor?: string;
+        };
         PasswordResetConfirmation: {
             newPassword: string;
             token: string;
         };
         PasswordResetRequest: {
             email: string;
+        };
+        PlatformAuthorization: {
+            /** @description The platform's consent page */
+            authorizationUrl: string;
+        };
+        PlatformConnection: {
+            /** @description The account's name on the platform; absent when not connected */
+            accountName?: string;
+            /** Format: date-time */
+            connectedAt?: string;
+            /** @enum {string} */
+            platform: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            /**
+             * @description `reconnect_required`: the platform no longer accepts the authorization
+             * @enum {string}
+             */
+            status: "not_connected" | "active" | "reconnect_required";
         };
         RefreshRequest: {
             /** @description Required for clients without a browser origin */
@@ -994,6 +1085,94 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageResponsePlatformConnection"];
+                };
+            };
+        };
+    };
+    connect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                platform: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectPlatformRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlatformConnection"];
+                };
+            };
+        };
+    };
+    disconnect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                platform: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authorize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                platform: "freelancer" | "upwork" | "fiverr" | "bionluk" | "arc_dev";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlatformAuthorization"];
+                };
             };
         };
     };
