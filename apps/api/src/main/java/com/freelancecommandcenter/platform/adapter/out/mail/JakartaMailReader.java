@@ -23,7 +23,14 @@ import org.springframework.stereotype.Component;
 class JakartaMailReader implements MailReader {
 
     private static final Logger log = LoggerFactory.getLogger(JakartaMailReader.class);
-    private static final Session SESSION = Session.getInstance(new Properties());
+    /** Headers may be raw UTF-8 instead of encoded words (RFC 6532), as in mail relayed by some forwarding services. */
+    private static final Session SESSION = Session.getInstance(utf8Headers());
+
+    private static Properties utf8Headers() {
+        Properties properties = new Properties();
+        properties.setProperty("mail.mime.allowutf8", "true");
+        return properties;
+    }
 
     @Override
     public MailMessage read(byte[] raw) {

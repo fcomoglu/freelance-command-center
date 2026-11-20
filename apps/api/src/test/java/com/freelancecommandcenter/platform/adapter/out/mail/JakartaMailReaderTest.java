@@ -65,6 +65,14 @@ class JakartaMailReaderTest {
     }
 
     @Test
+    void headersInRawUtf8AreRead() {
+        MailMessage mail =
+                reader.read(bytes("From: Bionluk <noreply@bionluk.com>\nSubject: Yeni bir değerlendirme aldın\n\n"));
+
+        assertThat(mail.subject()).isEqualTo("Yeni bir değerlendirme aldın");
+    }
+
+    @Test
     void aBrokenHeaderIsRejected() {
         assertThatThrownBy(() -> reader.read(bytes("From: <<<\nSubject: x\n\nBody\n")))
                 .isInstanceOf(UnreadableMailException.class);
