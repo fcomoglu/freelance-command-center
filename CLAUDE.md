@@ -5,9 +5,9 @@ keep it current as described in [Documentation and comments](#documentation-and-
 
 ## Project
 
-**Freelance Command Center** — an AI-assisted application that lets freelancers manage their work across multiple
-freelance platforms (Freelancer.com, Upwork, Fiverr, Bionluk, Arc.dev, ...) from one place: discover and score jobs
-against the freelancer's profile, draft proposals with AI, track bids, and get notified.
+**Freelance Command Center** — one inbox for freelancers who work on several platforms (Freelancer.com, Upwork,
+Fiverr, Bionluk, Arc.dev, ...): new jobs, messages and platform notifications in one place, with push notifications;
+AI job scoring and proposal drafts come later (see [ADR 0011](docs/adr/0011-product-focus-one-inbox.md)).
 
 Clients: **web** (React), **mobile** (React Native / Expo) and a **browser extension** (Chrome, MV3) for platforms
 that do not offer a public API.
@@ -73,7 +73,7 @@ Other notes:
   - `adapter.in.web` — REST controllers + request/response DTOs.
   - `adapter.out.*` — persistence (JPA), platform API clients, Claude client, etc.
 - **Pragmatic DDD:** modules are bounded contexts with their own language. Modules with real business rules
-  (`identity`, `job`, `matching`, `proposal`) use aggregates (invariants enforced inside, changed only through
+  (`identity`, `job`, `messaging`, `matching`, `proposal`) use aggregates (invariants enforced inside, changed only through
   their methods), value objects (immutable records), typed IDs (`JobId`) and domain events. Thin modules
   (`notification`) may stay simpler. One aggregate per transaction; other aggregates react to its events.
 - Modules talk to each other through their **published API** (`<module>/api` package) or **domain events**, never by
