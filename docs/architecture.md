@@ -338,6 +338,8 @@ flowchart LR
     api -->|SMTP| relay[SMTP relay]
 ```
 
+- **Host:** a Hetzner Cloud arm64 server running Ubuntu with Docker. SSH accepts keys only, the firewall allows only
+  SSH, the app runs as an unprivileged user in the `docker` group, and security updates install unattended.
 - **Ingress:** a Cloudflare Tunnel; its public hostname (the app subdomain) points to `http://web:80`. The host
   publishes no ports. Cloudflare appends the client address to `X-Forwarded-For`, which the API trusts behind its
   internal proxies.
@@ -349,7 +351,7 @@ flowchart LR
 - **Settings:** `infra/.env` for the stack (app subdomain, database password, tunnel token) and `apps/api/.env` for the
   API, both only on the host.
 - **Backups:** a daily `pg_dump` into `infra/backups/`, kept for 14 days; off-site copies (planned).
-- **Releases:** pull the checkout on the host and run the stack command again; Compose rebuilds and replaces the
+- **Releases:** update the checkout on the host and run the stack command again; Compose rebuilds and replaces the
   changed images.
 
 ## Quality gates

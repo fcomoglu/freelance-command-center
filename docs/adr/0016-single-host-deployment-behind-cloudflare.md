@@ -21,9 +21,11 @@ The operator already has a domain whose DNS is on Cloudflare and serves a websit
 ## Decision
 
 - **One host, Docker Compose.** `infra/compose.prod.yaml` runs PostgreSQL, Redis, the API, the web image, a backup job
-  and a Cloudflare Tunnel connector on one virtual machine. The first host is an Oracle Cloud Always Free Ampere (arm64)
-  instance; every image used has an arm64 variant, and the stack does not depend on the provider, so moving to another
-  VM means copying the volumes and `.env` files.
+  and a Cloudflare Tunnel connector on one virtual machine. The host is a small Hetzner Cloud Ampere (arm64) server
+  (2 vCPU, 4 GB RAM, swap for image builds), resized in place when needed; it can host the operator's other sites
+  behind the same tunnel. Free tiers were ruled out: Oracle Cloud's Always Free Ampere capacity is rarely available.
+  Every image used has an arm64 variant, and the stack does not depend on the provider, so moving to another VM means
+  copying the volumes and `.env` files.
 - **Cloudflare Tunnel instead of open ports.** `cloudflared` keeps an outbound connection to Cloudflare, which
   terminates TLS and forwards the app's hostname to the web container. The host accepts no inbound HTTP traffic and
   manages no certificates, and its address stays private.
@@ -42,8 +44,8 @@ The operator already has a domain whose DNS is on Cloudflare and serves a websit
 
 ## Consequences
 
-- The running cost is the domain the operator already pays for; the free host can be reclaimed or resized by its
-  provider, which the provider-neutral stack makes a migration rather than a rewrite.
+- The running cost is a few euros a month for the server plus the domain the operator already pays for. Changing
+  provider is a migration rather than a rewrite, as the stack is provider-neutral.
 - Cloudflare sits in front of every request. Client addresses reach the API through `X-Forwarded-For`, which the
   edge appends to and the internal proxies pass on, so per-IP rate limits keep working.
 - A single host has no redundancy: an outage or an update of the host stops sync and push until it is back. Mail sent
