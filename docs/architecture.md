@@ -351,8 +351,12 @@ flowchart LR
 - **Settings:** `infra/.env` for the stack (app subdomain, database password, tunnel token) and `apps/api/.env` for the
   API, both only on the host.
 - **Backups:** a daily `pg_dump` into `infra/backups/`, kept for 14 days; off-site copies (planned).
-- **Releases:** update the checkout on the host and run the stack command again; Compose rebuilds and replaces the
-  changed images.
+- **Releases:** `git push prod main` to a bare repository on the host (`~/fcc.git`), whose `post-receive` hook
+  (`infra/deploy/post-receive`) checks out `main` into `~/fcc`, rebuilds and replaces the changed images, and prunes old
+  ones. Set up once with `git init --bare ~/fcc.git` and the hook copied to `~/fcc.git/hooks/`; the remote and host
+  name stay out of the repository.
+- **Monitoring:** `/health` on the app subdomain returns the API's health status (database and Redis included), for
+  an external uptime monitor that alerts by e-mail.
 
 ## Quality gates
 

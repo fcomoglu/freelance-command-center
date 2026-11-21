@@ -28,7 +28,7 @@ packages/
 docs/
   architecture.md   System overview, modules, data flow
   adr/              Architecture Decision Records (one file per decision)
-infra/              Docker Compose files (local, production) and the Cloudflare inbound mail Worker
+infra/              Docker Compose files (local, production), the deploy hook and the Cloudflare inbound mail Worker
 .github/            CI workflow and Dependabot configuration
 ```
 
@@ -188,6 +188,7 @@ locally and for integration tests; integration tests are skipped when Docker is 
 | Build the container images | `docker build -t fcc-api apps/api` / `docker build -f apps/web/Dockerfile -t fcc-web .` |
 | Run the images locally (http://localhost:8081) | `docker compose -f infra/compose.yaml -f infra/compose.app.yaml up --build` |
 | Production stack (on the host; settings in `infra/.env` and `apps/api/.env`) | `docker compose -f infra/compose.prod.yaml up -d --build` |
+| Deploy `main` to production (remote `prod` = the host's `fcc.git`, see docs/architecture.md#production) | `git push prod main` |
 | Deploy the inbound mail Worker (Cloudflare) | `cd infra/cloudflare/inbound-mail-worker && npx wrangler@latest deploy` |
 | Local e-mail inbox (Mailpit) | `http://localhost:8025` |
 | Deliver a forwarded platform e-mail locally (`INBOUND_MAIL_SECRET` set in `apps/api/.env`) | `curl -H "Authorization: Bearer <secret>" -H "X-Envelope-To: <inbox address>" -H "Content-Type: message/rfc822" --data-binary @mail.eml http://localhost:8080/api/v1/inbound-mail` |
