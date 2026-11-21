@@ -2,3 +2,6 @@
 name = "fcc-inbound-mail"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
+# Only Email Routing invokes it; no public URL.
+workers_dev = false
+preview_urls = false
