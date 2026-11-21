@@ -48,6 +48,11 @@ management:
     health:
       probes:
         enabled: true
+  health:
+    mail:
+      # E-mails are sent by outbox event listeners, so an unreachable SMTP relay leaves them in the outbox instead
+      # of failing requests; it does not make the API unhealthy. Checking it would open a relay connection per probe.
+      enabled: false
 
 springdoc:
   # Stable output so the committed spec only changes when the contract does.
