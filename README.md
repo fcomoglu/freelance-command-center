@@ -1,31 +1,159 @@
 # Freelance Command Center
 
-One inbox for your freelance work: new jobs, messages and notifications from every platform you use, on the web, on
-your phone and in your browser. AI job scoring and proposal drafts come next.
+One inbox for freelancers who work on several platforms. New jobs, messages and platform notifications from
+Freelancer.com, Upwork, Fiverr, Bionluk and Arc.dev arrive in one place, on the web and on the phone, with push
+notifications. AI job scoring and proposal drafts come next.
 
-> Status: early development — the project skeleton is in place; features are being built.
+A Java 25 / Spring Boot 4 **modular monolith** with **hexagonal** modules and **domain-driven design**, React and
+React Native clients on a generated, typed API contract, and a containerized production stack behind Cloudflare.
+
+> Status: running in production. Accounts, the job feed, job alerts, the message inbox and the notification feed
+> work end to end; the Upwork and Freelancer.com account connections await the platforms' API approval.
 
 ## Features
 
 | Feature | Status |
 |---|---|
-| **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | in progress |
-| **Unified job feed** from Freelancer.com and Upwork (official APIs) and from Arc.dev and Bionluk (their notification e-mails, forwarded to your inbox address), with push notifications for new jobs | in progress (Freelancer.com and Upwork feed on web and mobile, keyword job alerts as push notifications on Android, inbox address for forwarded e-mails whose jobs stay private to your workspace; parsers for the Arc.dev and Bionluk e-mails next) |
-| **Unified messages:** conversations from every platform in one list, with unread state and push notifications; replies are written on the platform | in progress (inbox on web and mobile with push notifications, filled from forwarded e-mails and from connected Freelancer.com and Upwork accounts; not yet tried against the live platforms, whose OAuth apps await approval) |
-| **Bid and platform notifications:** decisions on your proposals and platform notices in one feed, with unread state and push notifications | in progress (feed on web and mobile with push notifications: decisions on Freelancer.com bids and Upwork proposals from connected accounts, not yet tried against the live platforms, and every forwarded platform e-mail as a notice) |
+| **Accounts:** sign-up with e-mail verification, sign-in on web and mobile, password reset | done |
+| **Unified job feed:** Freelancer.com and Upwork through their official APIs; Arc.dev and Bionluk through their notification e-mails, forwarded to the workspace's inbox address | in progress (API feeds and the inbox address work; parsers for the Arc.dev and Bionluk e-mails are next) |
+| **Job alerts:** keyword filters per workspace, push notifications for matching jobs | done (Android) |
+| **Unified messages:** conversations from every platform in one list, with unread state and push notifications; replies are written on the platform | in progress (from forwarded e-mails; Freelancer.com and Upwork connections await API approval) |
+| **Bid and platform notifications:** decisions on your proposals and platform notices in one feed | in progress (platform notices from forwarded e-mails; proposal decisions await API approval) |
 | **AI fit score** for every job, based on the profile imported from your platform accounts, with the reasons behind the score | planned |
 | **Proposal drafts** in the job's language, with a suggested price; you review and approve before anything is sent | planned |
-| **Multi-language UI** (English, Turkish) | in progress |
+| **Multi-language UI** (English, Turkish), on the web and on mobile | done |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    clients([Web · Mobile]) -->|REST, OpenAPI| api
+    sched([Scheduler]) --> platform
+    webhook([Inbound mail webhook]) --> platform
+    subgraph api [Spring Boot API — one deployable, nine modules]
+        platform -->|JobDiscovered| job -->|JobPublished| matching -->|JobMatched| notification
+        platform -->|MessageReceived| messaging -->|MessageArrived| notification
+        platform -->|NotificationReceived| notification
+        identity
+    end
+    platform -.->|official APIs| ext([Freelancer.com · Upwork])
+```
+
+Modules talk only through published APIs and domain events; every arrow inside the API is an event delivered through
+a transactional outbox. The full design is in [docs/architecture.md](docs/architecture.md), the reasons behind it in
+the [decision records](docs/adr).
+
+### Modular monolith with Spring Modulith
+
+- Each module is a **bounded context** (`identity`, `platform`, `job`, `matching`, `messaging`, `notification`, ...)
+  that owns its PostgreSQL schema; no module reads another module's tables.
+- Modules expose a small **published API** (`<module>/api`, Spring Modulith named interfaces) and communicate
+  otherwise only through **domain events**.
+- Events are stored by the Spring Modulith **event publication registry** in the same transaction as the change
+  (transactional outbox) and handled by `@ApplicationModuleListener`s after commit; incomplete publications are
+  republished on restart, and every handler is **idempotent**.
+- `ApplicationModules.verify()` fails the build on any boundary violation, and the tests generate the module
+  documentation.
+
+### Hexagonal architecture and DDD inside each module
+
+- `domain` (plain Java: no Spring, no JPA) → `application` (one use case class per use case, outbound ports, events)
+  → `adapter.in` (REST controllers, schedulers) and `adapter.out` (JPA, Redis, platform clients, SMTP, push).
+  **ArchUnit** tests enforce the direction of every dependency.
+- **Aggregates** guard their invariants and change only through their methods (`User`, `Conversation`,
+  `JobFilter`, `PlatformConnection`); one aggregate per transaction, others react to its events.
+- **Value objects** and **typed IDs** as immutable records (`Email`, `Keyword`, `JobBudget`, `JobId`,
+  `WorkspaceId`); IDs are time-ordered **UUIDv7** generated by the application.
+- JPA entities live in the persistence adapters and are mapped to and from the domain model.
+
+### Design patterns
+
+| Pattern | Where |
+|---|---|
+| Ports and adapters | Every module: use cases depend on `port.out` interfaces, adapters implement them |
+| Strategy + registry | One adapter per platform; `PlatformRegistry` selects it by platform and answers which capabilities it has |
+| Interface segregation (capability ports) | `JobSource`, `MessageSource`, `NotificationSource`, `ProposalStatusTracker`, `AccountConnector`: a platform implements only what it supports |
+| Anti-corruption layer | A translator per platform maps API payloads to the canonical model; the raw payload is kept as JSONB so mappings can be re-applied |
+| Chain of parsers | `PlatformMailParser`s per platform; the first that understands a forwarded e-mail reads it, unknown mails become notices |
+| Transactional outbox + idempotent consumer | Spring Modulith event publication registry; handlers de-duplicate by natural keys |
+| Interceptor | Upwork requests renew OAuth access tokens and retry once after a 401 |
+| High-watermark sync | Job sync reads only listings updated since the last run, in bounded pages |
+| Keyset pagination | Every list endpoint: opaque cursors over keyset positions, not offsets |
+
+### Java 25 and Spring Boot 4 in use
+
+- **Java:** records for value objects, typed IDs, events, DTOs and configuration; virtual threads for request
+  handling; text blocks for SQL; pattern matching and switch expressions; sequenced collections.
+- **Spring Web MVC** with RFC 9457 **Problem Details** (stable error codes, translated by the clients) and Bean
+  Validation; **springdoc** generates the OpenAPI contract, which is committed and checked in CI.
+- **RestClient** for the Freelancer.com REST and Upwork GraphQL APIs, the OAuth 2 token endpoints and the Expo Push
+  Service.
+- **Spring Security:** two filter chains (users with JWT bearer tokens, the mail webhook with a service secret);
+  OAuth 2 resource server for self-issued **RS256 JWTs**; Argon2id password hashing.
+- **Spring Data JPA** for aggregates and **JdbcClient** for queries; **Flyway** migrations; `SELECT ... FOR UPDATE`
+  where ordering matters.
+- **Spring Data Redis** for sign-in attempt limits and per-IP rate limiting.
+- **Typed `@ConfigurationProperties`** (records), `SchedulingConfigurer` fixed-delay tasks, `MessageSource` for
+  localized e-mails, Actuator health probes.
+- **Developer experience:** Docker Compose support starts PostgreSQL, Redis and Mailpit on `spring-boot:run`;
+  `spring-boot:test-run` uses Testcontainers instead.
+
+### Security
+
+- Short-lived access tokens; opaque refresh tokens stored as hashes, rotated on every use, with reuse detection that
+  revokes the whole token family.
+- On the web the refresh token lives only in an `HttpOnly`, `SameSite=Strict` cookie; on mobile in the secure store.
+- Platform OAuth tokens are encrypted at rest with AES-256-GCM.
+- Responses never reveal whether an e-mail address is registered; sign-in, reset and resend requests are rate limited.
+
+### Testing and quality
+
+- JUnit 5 and AssertJ unit tests for domain and application code; end-to-end HTTP integration tests on
+  **Testcontainers** (PostgreSQL, Redis, Mailpit) with one shared context.
+- Architecture tests: Spring Modulith verification and ArchUnit layering rules.
+- Contract tests: the OpenAPI document must match the committed spec; every API error code must be translated in
+  every client language.
+- The compiler runs with `-Xlint:all` and fails on warnings; Spotless (Palantir Java Format) and Prettier keep the
+  formatting; JaCoCo reports coverage.
+- Clients: Vitest and Testing Library (web), Jest with React Native Testing Library (mobile), oxlint / ESLint and
+  strict TypeScript.
+
+### Infrastructure and delivery
+
+- **Container images:** the API as a layered Spring Boot jar on a JRE, running as a non-root user; the web app on
+  nginx, which also proxies the API so both share one origin.
+- **Production:** one arm64 host on Hetzner Cloud running Docker Compose (API, web, PostgreSQL, Redis, daily
+  backups). **Cloudflare Tunnel** is the only way in: the host publishes no ports.
+- **Inbound mail:** Cloudflare Email Routing hands forwarded platform e-mails to an **Email Worker** (TypeScript),
+  which posts the raw message to the API's webhook.
+- **Outbound mail** through an SMTP relay with SPF, DKIM and DMARC.
+- **Delivery:** GitHub Actions builds and tests the API and the clients and builds both images on every pull request;
+  a release is a `git push` to the host, whose hook rebuilds and restarts the changed services.
+- **Operations:** health endpoint watched by an external uptime monitor; Dependabot keeps dependencies current.
 
 ## Tech stack
 
 | Part | Technology |
 |---|---|
-| Backend | Java 25, Spring Boot 4, Spring Modulith, PostgreSQL, Redis, Flyway |
-| AI | Claude via the official Anthropic Java SDK |
-| Web | React, TypeScript, Vite, TanStack Query, i18next |
-| Mobile | Expo (React Native), TypeScript, Expo Router |
-| Tooling | Maven, npm workspaces, Docker (images and Compose), GitHub Actions |
+| Backend | Java 25, Spring Boot 4, Spring Modulith, Spring Security, Spring Data JPA, Hibernate, Flyway |
+| Data | PostgreSQL 18 (one schema per module, JSONB), Redis 8 |
+| AI (planned) | Claude via the official Anthropic Java SDK, behind a port |
+| Web | React 19, TypeScript, Vite, TanStack Router and Query, Tailwind CSS, i18next |
+| Mobile | Expo (React Native), Expo Router, Expo Notifications (FCM), expo-secure-store |
+| Shared client code | Typed API client generated from the OpenAPI spec (openapi-typescript, openapi-fetch), shared translations |
+| Build and quality | Maven, npm workspaces, JUnit 5, Testcontainers, ArchUnit, JaCoCo, Spotless, Vitest, Jest |
+| Infrastructure | Docker, Docker Compose, nginx, Cloudflare (Tunnel, Email Routing, Workers), Hetzner Cloud, GitHub Actions |
+
+## Repository layout
+
+```
+apps/api        Spring Boot backend (modular monolith)
+apps/web        React web client
+apps/mobile     Expo mobile client
+packages/       Typed API client and shared translations
+infra/          Docker Compose files, deploy hook, Cloudflare Email Worker
+docs/           Architecture, decision records, local setup
+```
 
 ## Getting started
 
@@ -39,83 +167,17 @@ npm run web:dev                       # web app on http://localhost:5173; e-mail
 npm run mobile:start                  # mobile app; press s to switch between the development build and Expo Go
 ```
 
-The API and web container images, and running them locally, are described in
-[docs/architecture.md](docs/architecture.md#deployment).
-
-### Platform credentials
-
-The job sync reads each platform with credentials from `apps/api/.env` (see `apps/api/.env.example`); a platform
-without credentials is left out.
-
-- **Freelancer.com:** generate a personal access token at https://accounts.freelancer.com/settings/develop and set
-  `FREELANCER_ACCESS_TOKEN`. It is valid for 30 days.
-- **Upwork:** request an API key at https://www.upwork.com/developer/keys/apply with the permission "Read marketplace
-  Job Postings" and set `UPWORK_CLIENT_ID` and `UPWORK_CLIENT_SECRET`. Then authorize the key once:
-  1. Open `https://www.upwork.com/ab/account-security/oauth2/authorize?response_type=code&client_id=<client id>&redirect_uri=<callback URL of the key>`
-     and allow access; the browser is sent to the callback URL with a `code` parameter.
-  2. Exchange the code for tokens:
-     `curl -X POST https://www.upwork.com/api/v3/oauth2/token -d grant_type=authorization_code -d client_id=<client id> -d client_secret=<secret> -d redirect_uri=<callback URL> -d code=<code>`
-  3. Set `UPWORK_REFRESH_TOKEN` to the `refresh_token` of the answer. The API renews access tokens itself and stores
-     every newer refresh token; authorize again only when Upwork rejects it (unused for two weeks).
-
-Users connect their own Freelancer.com account (Connected accounts in the web app) to read its messages and the
-decisions on its bids. This needs an OAuth app, reviewed by Freelancer.com before it works:
-
-1. At https://accounts.freelancer.com, open "Develop with Freelancer.com" and create an application with the advanced
-   scopes `fln:project_manage` (bids are only read) and `fln:messaging`, and the redirect endpoint
-   `<web address>/connections/freelancer/callback` (locally `http://localhost:5173/connections/freelancer/callback`).
-2. Once it is approved, set `FREELANCER_CLIENT_ID` and `FREELANCER_CLIENT_SECRET`, and `PLATFORM_TOKEN_KEY` to 32
-   random bytes in base64 (`openssl rand -base64 32`), which encrypts the stored tokens. Keep the key: tokens stored
-   under another key cannot be read, and every account must be connected again.
-
-Upwork accounts are connected the same way with the Upwork API key: give the key the permissions "Messaging -
-Read-Only Access", "Common Entities - Read-Only Access" and "Client Proposals - Read And Write Access" (proposals
-are only read; Upwork has no read-only permission for them) and the callback URL
-`<web address>/connections/upwork/callback`, then set `UPWORK_ACCOUNT_CONNECTIONS=true` (and `PLATFORM_TOKEN_KEY`).
-
-The mobile app calls `http://localhost:8080` (Android emulator: `http://10.0.2.2:8080`). On a physical device, set
-`EXPO_PUBLIC_API_URL` to your computer's LAN address, e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.20:8080`.
-
-### Push notifications on Android
-
-Job alerts reach the phone through the Expo Push Service and Firebase Cloud Messaging. Expo Go cannot receive them;
-the app needs a development build with your own Expo and Firebase projects:
-
-1. Create a free Expo account, then in `apps/mobile`: `npx eas-cli@latest login` and
-   `npx eas-cli@latest init --id <project id>` after creating a project on expo.dev (or let `init` create one). Set
-   `EAS_PROJECT_ID` to the project id; for EAS builds add it as an EAS environment variable
-   (`npx eas-cli@latest env:create`).
-2. In a Firebase project, add an Android app with the package `com.freelancecommandcenter.app` and download its
-   `google-services.json` (git-ignored). Add it as the EAS file environment variable `GOOGLE_SERVICES_JSON`
-   (`npx eas-cli@latest env:create`); for local builds set `GOOGLE_SERVICES_JSON` to the path of the file.
-3. Create a service account key in Firebase (Project settings, Service accounts) and upload it as the FCM V1 key:
-   `npx eas-cli@latest credentials` (Android, Google Service Account, push notifications).
-4. Build and install the development build: `npx eas-cli@latest build --profile development --platform android`,
-   then open the install link on the phone.
-5. Start Metro with `npm run mobile:start`, open the app, and turn on notifications under Settings.
-
-### Forwarded platform e-mails
-
-Fiverr, Bionluk and Arc.dev are read from their notification e-mails
-([ADR 0012](docs/adr/0012-platforms-without-api-via-forwarded-notification-emails.md)). Each workspace has an inbox
-address, shown on the web app's **Platform e-mails** page; a forwarding rule in your mailbox sends the platforms'
-notification e-mails there.
-
-- The platform is recognized by the sender, so the rule must keep the original sender: in Outlook use **Redirect to**
-  (**Forward to** sends the mail as yourself); Gmail's forwarding keeps it.
-- The platforms only send what you have switched on: keep their e-mail notifications enabled, and keep your gigs and
-  listings active (Fiverr sends buyer briefs only for active gigs). Fiverr has no job board, so its e-mails bring
-  messages, orders and briefs rather than jobs.
-- Jobs read from your e-mails are visible only in your workspace.
-
-- The address domain is `INBOUND_MAIL_DOMAIN`. In production a mail routing service (for example Cloudflare Email
-  Routing with an Email Worker) receives mail for that domain and posts each raw message to
-  `POST /api/v1/inbound-mail` with the recipient in `X-Envelope-To` and `INBOUND_MAIL_SECRET` as bearer token.
-- Locally, set `INBOUND_MAIL_SECRET` in `apps/api/.env` and post a saved `.eml` file with the `curl` command
-  from [CLAUDE.md](CLAUDE.md#commands).
+Platform credentials, account connections, push notifications on a phone and forwarded e-mails are set up as
+described in [docs/setup.md](docs/setup.md).
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) — system design, modules and data flow.
-- [Decision records](docs/adr) — why the key technical decisions were made.
-- [CLAUDE.md](CLAUDE.md) — repository layout, conventions and the full command list.
+- [Architecture](docs/architecture.md): system context, modules, flows, data ownership, API conventions, deployment.
+- [Decision records](docs/adr): why the modular monolith, the module boundaries, the authentication design, the API
+  contract, the e-mail based integration and the single-host deployment were chosen.
+- [Local setup](docs/setup.md): platform credentials, push notifications, forwarded e-mails.
+- [CLAUDE.md](CLAUDE.md): repository conventions and the full command list.
+
+## License
+
+[MIT](LICENSE)

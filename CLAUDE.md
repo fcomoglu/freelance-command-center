@@ -28,6 +28,7 @@ packages/
 docs/
   architecture.md   System overview, modules, data flow
   adr/              Architecture Decision Records (one file per decision)
+  setup.md          Local setup beyond the quick start: platform credentials, push, forwarded e-mails
 infra/              Docker Compose files (local, production), the deploy hook and the Cloudflare inbound mail Worker
 .github/            CI workflow and Dependabot configuration
 ```
@@ -138,7 +139,8 @@ Each fact has one home; other files link to it instead of repeating it:
 
 | File | Owns |
 |---|---|
-| `README.md` | What the product is, feature list with status, tech stack, quick start, links to the docs below. |
+| `README.md` | What the product is, feature list with status, architecture and technology highlights (linking to `docs/architecture.md` for details), tech stack, quick start, links to the docs below. |
+| `docs/setup.md` | Local setup beyond the quick start: platform credentials and OAuth apps, the mobile app on a device and push, forwarded e-mails. |
 | `CLAUDE.md` | Working rules: layout, golden rules, conventions, the full command list. |
 | `docs/architecture.md` | The system design: context, modules, flows, integration, AI cost, i18n. |
 | `docs/adr/` | Why a hard-to-reverse decision was made. The only history-style documents. |
