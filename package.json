@@ -1,8 +1,8 @@
 {
   "name": "freelance-command-center",
   "private": true,
-  "description": "AI-assisted workspace for freelancers across multiple platforms.",
-  "license": "UNLICENSED",
+  "description": "One inbox for freelancers across platforms: jobs, messages and notifications.",
+  "license": "MIT",
   "workspaces": [
     "apps/web",
     "apps/mobile",
