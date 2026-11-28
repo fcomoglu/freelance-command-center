@@ -5,7 +5,7 @@ name: fcc-prod
 
 services:
   postgres:
-    image: postgres:18-alpine
+    image: postgres:19-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: fcc
@@ -60,7 +60,7 @@ services:
 
   # A dump a day, kept for 14 days, in infra/backups on the host.
   backup:
-    image: postgres:18-alpine
+    image: postgres:19-alpine
     restart: unless-stopped
     environment:
       PGHOST: postgres
