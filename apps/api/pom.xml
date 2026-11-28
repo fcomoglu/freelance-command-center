@@ -23,7 +23,7 @@
         <argLine>-XX:+EnableDynamicAgentLoading</argLine>
         <!-- Versions not managed by the Spring Boot parent -->
         <spring-modulith.version>2.1.1</spring-modulith.version>
-        <springdoc.version>3.2.0</springdoc.version>
+        <springdoc.version>3.2.1</springdoc.version>
         <archunit.version>1.5.1</archunit.version>
         <jacoco.version>0.8.16</jacoco.version>
         <spotless.version>3.11.0</spotless.version>
